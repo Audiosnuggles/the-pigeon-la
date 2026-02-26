@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Pigeon.</title>
+  
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thehumants.com/the-pigeon-UI/index.html">
+  <meta property="og:title" content="The Pigeon - Sound Drawing Sequencer">
+  <meta property="og:description" content="Draw your sound. An interactive visual sequencer for experimental music.">
+  <meta property="og:image" content="https://thehumants.com/the-pigeon-UI/og-image.jpg">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Pigeon - Sound Drawing Sequencer">
+  <meta name="twitter:description" content="Draw your sound. An interactive visual sequencer for experimental music.">
+  <meta name="twitter:image" content="https://thehumants.com/the-pigeon-UI/og-image.jpg">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="header__left">
+      <h1 class="header__title" id="pigeonTitle">
+        <span class="title-line">Sound Drawing</span>
+        <span class="title-line">Sequencer</span>
+      </h1>
+    </div>
+    
+    <div class="header__right">
+      
+      <svg class="header__logo-icon" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 64 64">
+        <path d="M2.4,9.4s0,0,0,0c0,0,0,0,0,0,0,0,.1,0,.1,0,0,0,.1-.2.2-.3h0c.9-.5,1.8-.9,2.7-1.4,1-.5,2.1-1.1,3.1-1.7.3-.2.6-.3.8-.5.1.1.2.2.3.4.2.3.4.6.6.9.2.3.4.6.5.9.3.6.7,1.3,1,1.9.3.6.6,1.3.9,2,.3.6.6,1.3,1,1.9.4.6.7,1.2,1.2,1.7.4.5.9,1.1,1.4,1.5.1.1.3.2.4.3,0,0,.2,0,.1-.1-.5-.8-1-1.6-1.5-2.4-.5-.8-1-1.6-1.4-2.5-.5-.8-.9-1.7-1.3-2.5-.4-.8-.9-1.7-1.3-2.5-.3-.7-.6-1.4-.7-2.2.3-.2.6-.4.9-.5,1-.6,2-1.2,2.9-1.9,1-.6,1.9-1.3,2.9-2,.1,0,.2-.2.3-.2,0,0,0-.2,0-.2-.6,0-1.2,0-1.8,0s-1.2.1-1.8.3c-.6.1-1.2.3-1.7.5-.6.2-1.1.5-1.7.8-.5.3-1,.6-1.5.9s-1,.7-1.5,1.1c-.5.4-.9.8-1.4,1.2-.4.4-.8.8-1.2,1.3-.5.3-.9.6-1.4.9-.4.3-.7.5-1,.8-.3.3-.5.6-.6.9,0,.2,0,.4,0,.5,0,0,0,0,.1,0ZM10.4,4.2c0,.2,0,.4,0,.6-.3.2-.7.4-1,.6-.1-.1-.2-.2-.4-.3l1.3-.9Z" fill="#141414"/>
+        <path d="M16.4,43.8c-.6-.7-1.2-1.4-1.7-2-.6-.7-1.2-1.4-1.7-2-.6-.7-1.2-1.4-1.7-2-.6-.7-1.1-1.4-1.7-2-.6-.7-1.2-1.4-1.7-2,0,0-.1-.2-.2-.2.2-.2.3-.3.5-.5.6-.7,1.1-1.5,1.6-2.3.5-.9.9-1.8,1.3-2.6.5-1.1,1-2.2,1.6-3.3.3-.5.5-1.1.8-1.6.1-.3.3-.5.4-.8.1-.2.2-.5.3-.8,0-.2,0-.5,0-.8-.1-.2-.3-.4-.6-.5-.4-.2-.9-.3-1.4-.5-.9-.2-1.9-.3-2.9-.2-1,0-1.9.3-2.9.6-1,.3-1.9.7-2.8,1.2-.9.5-1.7,1-2.5,1.6-.2.1-.4.3-.6.4,0,0,0,0,0,0,0,.1,0,.2.1.4,0,0,0,0-.1,0H0c-.1,0,0,.3,0,.2l.2.9s0,0,0,0c0,0,0,0,0,.1h0c.4.4.7.9,1.1,1.3.3.8.7,1.6,1,2.4.4.9.9,1.7,1.3,2.5.5.8,1,1.6,1.5,2.4.5.8,1.1,1.6,1.7,2.3.6.8,1.2,1.5,1.8,2.2.6.7,1.3,1.4,2,2.1.7.7,1.4,1.3,2.1,1.9.7.6,1.5,1.2,2.2,1.8.8.6,1.6,1.1,2.4,1.6.2.1.4.2.6.4.1,0,.2,0,.1-.2-.6-.7-1.2-1.4-1.7-2ZM.7,24.2s0,0,0,0c.5-.1,1-.2,1.5-.3.7-.2,1.4-.3,2.1-.5.7-.2,1.4-.3,2.1-.5.7-.2,1.4-.3,2.1-.5.7-.2,1.4-.3,2.1-.5h0c-.3.8-.6,1.5-.9,2.3-.3.8-.6,1.7-1,2.5-.3.8-.6,1.7-.9,2.5s-.6,1.7-.9,2.5c0,.2-.2.4-.3.7-.2-.2-.4-.4-.6-.7-.6-.7-1.2-1.4-1.7-2-.6-.7-1.2-1.4-1.7-2-.3-.4-.7-.8-1-1.2-.3-.7-.6-1.5-.8-2.3Z" fill="#141414"/>
+        <path d="M24.4,41.7c0,0,.2,0,.2,0-.2-.7-.4-1.3-.6-2-.2-.7-.4-1.3-.7-2-.2-.7-.4-1.3-.7-2-.2-.7-.5-1.3-.7-2s-.5-1.3-.8-2c-.3-.7-.5-1.3-.8-2-.3-.6-.5-1.2-.9-1.7-.3-.5-.8-.9-1.4-1.1-.5-.2-1.1-.1-1.5.3-.3.3-.5.8-.4,1.3,0,0,0,.2.1.3,0,0-.1,0,0,.1h0c.5.8,1.1,1.7,1.6,2.5.5.8,1.1,1.7,1.6,2.5.5.8,1.1,1.7,1.6,2.5.5.8,1.1,1.7,1.6,2.5.5.8,1.1,1.7,1.6,2.5,0,.1.1.2.2.3Z" fill="#141414"/>
+        <path d="M15.8,22.6c-.1,0-.2.1-.3.3,0,.2-.1.3,0,.5,0,.2,0,.4.1.5,0,.2,0,.3.2.5,0,.1.2.3.4.3.2,0,.3,0,.5,0,.6-.1,1.1-.7,1.2-1.3,0-.3,0-.6,0-.9-.1-.2-.3-.4-.5-.5-.4-.2-1-.2-1.4.2,0,0,0,.1,0,.2,0,0,0,.1,0,.1,0,0,.1,0,.1,0h0s0,0-.1,0Z" fill="#141414"/>
+        <path d="M43.4,31.7c-.7,0-1.4,0-2.1.3-.7.2-1.3.5-2,.5-.2,0-.5,0-.8,0-.4-.3-.8-.6-1.1-1-.6-.7-1-1.5-1.4-2.3-.4-.9-.6-1.8-.9-2.7l.7.5c0,0,0,.1,0,.1h0c.8,0,1.6,0,2.4,0,.8,0,1.6,0,2.4-.1.4,0,.9-.1,1.3-.2,0,0,0,0,0-.1-.2-.8-.7-1.5-1.2-2.1-.5-.6-1.2-1.1-1.9-1.5s-1.5-.7-2.3-.8c-.4,0-.8,0-1.2,0-.2,0-.4,0-.6,0-.2,0-.4,0-.6.2-.2.2-.2.4-.2.6,0,.1,0,.3,0,.4,0,.1,0,.3,0,.4.1.5.3,1.1.4,1.6,0,.2.1.4.2.6,0,0,0,0-.1,0,0,0,0,0,0,0s0,0,0,0c0,0,.1,0,.2,0,0,.2,0,.4,0,.6,0,.5,0,1,.1,1.5.1.9.4,1.8.9,2.5.4.7,1.1,1.2,1.8,1.5.2,0,.5.1.7.2.1,0,.3.2.4.2.4.2.8.3,1.2.4.4,0,.8,0,1.2,0,.7-.1,1.5-.5,2-1,.1-.1.2-.3.3-.5,0,0,0-.1,0-.1ZM35.3,24.7c0-.2.2-.5.3-.7.2-.2.4-.3.6-.3.4,0,.7.2,1.1.4.4.2.8.4,1.1.6.4.2.8.4,1.1.6.2.1.4.2.6.3.1,0,.3.2.4.3,0,0,0,.1,0,.2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0-.7,0-1.5,0-2.2,0-.8,0-1.5,0-2.3,0-.3,0-.6,0-.9,0,0,0,0,0,0,0,0-.5,0-1,.2-1.4Z" fill="#141414"/>
+        <polygon points="53.7 23.8 53.7 23.8 53.7 23.8 53.7 23.8" fill="#141414"/>
+        <path d="M64,26.7c0-.5-.2-.9-.6-1.2-.3-.3-.7-.5-1.2-.5-.3,0-.5.1-.8.2-.2.1-.4.2-.7.4-.8.5-1.6,1.1-2.4,1.7-.6.5-1.2,1.1-1.7,1.7-.2.1-.3.2-.5.4-.6.5-1.2,1.1-1.8,1.7-.2.2-.4.5-.6.7.1-.4.2-.8.3-1.3.2-.7.3-1.4.4-2.1.1-.7.2-1.4.3-2.2,0-.4,0-.7,0-1.1,0-.3,0-.6,0-.9,0-.5-.1-1-.5-1.3,0,0-.1,0-.2,0,0,0,0,0-.1,0-.1.3-.2.6-.3,1,0,0,0,0,0,0,0,0-.1,0,0,0,0,.3,0,.6,0,.9,0,0,0,0,0,0,0,.4,0,.7,0,1.1v3.3c-.2.7-.3,1.3-.4,1.9-.2.7-.4,1.4-.6,2.1,0,0,0,.1,0,.2,0,0,0,0,0,0h0s0,0,0,0c0,0,0,0,0,.1,0,0,0,0,.1,0,.2-.3.5-.6.7-1,0,0,0,0,0,0,0,.7-.2,1.4-.3,2.1,0,0,0,.2,0,.3,0,0,0,0,0,0h0c0,.1.1.2.2,0h0s0,0,0,0c0,0,0,0,0,0,.3-.9.7-1.8,1.2-2.6.5-.8,1-1.6,1.6-2.4.2-.3.5-.6.7-.9.3-.2.6-.5.9-.7.6-.4,1.3-.9,2.1-1.1.4,0,.7,0,1.1,0,.3.1.6.3.8.6.4.6.4,1.3.3,2,0,.4-.2.8-.4,1.2-.2.4-.3.8-.5,1.2-.3.7-.5,1.4-.7,2.1-.2.5-.5.9-.7,1.4-.3.5-.5,1-.7,1.6-.2.5-.3,1-.3,1.5,0,.5.1.9.4,1.3.1.2.3.3.5.5,0,0,.2,0,.1,0,0-.9,0-1.8.1-2.6.1-.9.3-1.7.5-2.6,0-.3.2-.6.3-.9.5-1,1-2,1.6-3,.3-.6.6-1.1.8-1.7.3-.5.6-1,.8-1.6.2-.5.4-1.1.3-1.6Z" fill="#141414"/>
+        <path d="M19.6,8c0-.8,0-1.6,0-2.4.2.6.3,1.1.5,1.7.2.8.5,1.5.8,2.2.2.6.5,1.3.8,1.9,0,0,0,.1,0,.2,0,0,0,0,0,0,0,0,0,.1,0,.2.3.7.6,1.4,1,2.1.4.7.7,1.4,1.1,2.1,0,0,0,.2.1.3,0,0,.2,0,.2,0,0-.9-.1-1.8-.2-2.7,0-.7-.2-1.3-.4-2,.5-.1,1-.4,1.5-.6.6-.3,1.3-.6,1.9-.9,0,.7.1,1.5.3,2.2.2.8.5,1.5.9,2.1,0,0,.1.2.2.2,0,0,0,0,0,0,0,0,0,0,0,0,.2-1.2.3-2.5.5-3.7,0-.6,0-1.2.1-1.8.4-.2.9-.4,1.3-.6,0,0,0,0,0-.1,0,0,0,0-.1,0-.3.2-.7.3-1,.5h-.2c0-.5,0-1,.1-1.6,0-.6,0-1.2,0-1.9,0-.5,0-1.1,0-1.6,0-.5-.1-1-.3-1.4-.2-.5-.5-.9-.9-1.2-.2-.1-.4-.2-.7-.2-.2,0-.4.1-.5.3-.2.3-.1.7.2.9,0,0,.2,0,.2,0,0,0,0,0,0,0s0,0,0,0h0s0,0,0,0h0s0,0,0,0c0,0,0,0,0,0,0,.9,0,1.8-.1,2.7,0,.9-.2,1.8-.3,2.7,0,.7-.1,1.4-.1,2.1l-3.5,1.3s0,0,0,0c-.2-.9-.5-1.7-.9-2.6s-.7-1.7-1.2-2.5c-.4-.8-.9-1.6-1.5-2.3,0,0-.1-.2-.2-.3,0,0-.2,0-.2,0,0,.6,0,1.2,0,1.8,0,0,0,0,0,0h0s0,0,0,0c0,.6,0,1.3,0,1.9,0,.4,0,.7,0,1.1,0,.1.2.1.2,0Z" fill="#141414"/>
+        <path d="M32,13.5c0,0,0,.1,0,.2,0,0,0,.2,0,.3,0,.1.2.1.2,0,0,0,0-.2,0-.3,0,0,.1,0,.2,0,.3.1.6.2.9.3.6.2,1.2.3,1.9.4.6.1,1.3.2,1.9.2.6,0,1.3,0,1.9.1.2,0,.3,0,.5,0,.1,0,.1-.1,0-.2-.8-.5-1.6-.9-2.4-1.2-.8-.3-1.7-.6-2.6-.8-.2,0-.4,0-.6-.1,0,0-.2,0-.3-.1,0,0-.1-.1-.2-.2,0-.2,0-.4-.1-.5,0-.2,0-.4,0-.6,0-.4,0-.8.1-1.2.1-.3.3-.6.6-.8.6-.4,1.3-.5,2-.5,0,0,.2,0,.3,0,0,0,.1-.1,0-.2-.6-.4-1.2-.8-1.8-1.3-.2-.1-.3-.3-.5-.4,0-.1,0-.2,0-.3,0,0,0-.1,0-.2,0-.5,0-.9.1-1.4,0-.1,0-.3.1-.4,0-.1.1-.2.2-.3.1,0,.3,0,.4,0,.2,0,.3,0,.5,0,.6,0,1.2.2,1.8.4s1.2.3,1.8.4c.6,0,1.2.1,1.8,0,0,0,.1,0,.2,0,0,0,0-.1,0-.2-.9-.4-1.8-.8-2.8-1.2-.9-.4-1.9-.8-2.8-1.2-.4-.1-.8-.3-1.1-.4,0,0,0,0,0,0s0,0,0,0c-.1,0-.2,0-.3-.1,0,0-.1,0-.1,0,0,0,0,.1,0,.1,0,0,.2,0,.3.1,0,0,0,0,0,0h0c-.2.7-.5,1.5-.7,2.3-.2.8-.4,1.5-.5,2.3-.2.8-.3,1.5-.4,2.3-.1.8-.2,1.6-.3,2.3,0,.5,0,1-.1,1.5,0,.1,0,.2,0,.3,0,0,0,.2,0,.3ZM33.8,7.8c-.1.5-.2.9-.4,1.4.2-.7.3-1.4.5-2,0-.2,0-.5.1-.7,0,0,0,0,0,0,0,.4-.1.8-.2,1.3Z" fill="#141414"/>
+        <path d="M35.9,41.8c0-.3,0-.6,0-.9-.1-1.2-.3-2.5-.5-3.7-.2-1.2-.4-2.4-.6-3.6-.2-1.2-.5-2.4-.7-3.6-.3-1.2-.5-2.4-.8-3.6-.1-.6-.3-1.1-.4-1.7,0,0,0-.2,0-.2,0-.6,0-1.3,0-1.9,0-.1,0-.2,0-.3,0,0,0,0,0,0,0,0,0,0-.1,0-.2.5-.3,1.1-.2,1.7,0,0-.1-.1-.2-.2-.2,0-.4-.1-.6-.1-.2,0-.4,0-.6,0-.2,0-.4,0-.6,0-.7,0-1.5.2-2.1.6-.4,0-.7,0-1.1,0-.3,0-.6,0-.9.2-.2.1-.5.3-.6.5-.3.4-.4,1-.5,1.5,0,.5,0,1.1,0,1.6,0,.5.1,1.1.2,1.6.1.5.3,1,.5,1.5.2.5.4,1,.7,1.5.3.5.6.9.9,1.3.3.4.7.8,1.1,1.2,0,0,.2.2.3.3,0,0,.1,0,.2,0,.5-.8.9-1.6,1.3-2.4.4-.8.7-1.6,1-2.5.3-.9.5-1.7.7-2.6.1-.6.3-1.3.3-1.9,0,0,0,.1,0,.2,0,1.1,0,2.1.1,3.2,0,1.1,0,2.1.1,3.2,0,.5,0,1.1,0,1.6,0,.3,0,.5,0,.8,0,.2,0,.4,0,.6,0,.7.2,1.5.4,2.2.2.8.4,1.5.4,2.3,0,.7,0,1.4-.2,2-.4.8-1.1,1.3-1.7,1.9-.4.4-.7.7-1.2,1-.5.3-1,.6-1.6.9-.6.3-1.1.6-1.7.8-.6.3-1.1.5-1.7.8-.5.2-1,.5-1.5.7-.4.2-.7.4-1.1.7-.2.2-.4.5-.5.8,0,.1,0,.3,0,.4,0,0,0,0,.1,0,1.1-.3,2.2-.7,3.3-1.1,1.1-.4,2.1-.9,3.2-1.5,1-.5,2.1-1.1,3.1-1.7.5-.3,1-.6,1.5-.9.3-.1.5-.3.8-.4.2-.1.5-.3.7-.4.2-.1.4-.3.5-.5.1-.3.1-.5.1-.8,0-.3,0-.6,0-.9ZM29,32.3c-1.9.4-1.5-5.6-1.5-5.6.4-1,2.1-1.4,3-1.2s.4,6.5-1.5,6.8Z" fill="#141414"/>
+        <path d="M51.6,27.4c0-.9-.3-1.8-.8-2.5-.4-.6-1-1.2-1.7-1.5-.7-.3-1.6-.4-2.4,0,0,0,0,0,0,0,0,0-.1,0-.2,0h-.3c0,0,0-.1-.1-.2,0,0-.2,0-.1.1,0,0,0,0,.1.1,0,0-.2,0-.3,0-.7.3-1.2.8-1.6,1.5-.4.9-.4,1.8-.3,2.7,0,.5.2.9.3,1.4.1.4.3.9.5,1.3.4.8.9,1.6,1.6,2.1.7.6,1.5,1,2.4,1,.5,0,.9,0,1.3-.2.4-.2.7-.4.9-.8.4-.7.5-1.5.6-2.3,0-1,.2-2,0-3ZM48.2,32.3c-1.2,0-2.1-1.9-3.1-4s1.9-2.9,1.9-2.9c0,0,1.9-3.2,3.3,1.6,1.4,4.8-.9,5.2-2.1,5.3Z" fill="#141414"/>
+      </svg>
+      <img id="pigeon" src="pigeon.svg" alt="Pigeon">
+    </div>
+  </header>
+
+  <section class="tracks" id="main">
+
+    <div class="track track-container">
+      <div class="track__swatch track__swatch--pink"></div>
+      <div class="track__wave-btns wave-buttons">
+        <button class="wave-btn wave-btn--active active" data-wave="sine">∿</button>
+        <button class="wave-btn" data-wave="square">⊓</button>
+        <button class="wave-btn" data-wave="sawtooth">∧</button>
+      </div>
+      <div class="track__freq"><span>1k</span><span>500</span><span>250</span><span>80</span></div>
+      <div class="track__canvas-wrap"><canvas class="track__canvas" width="750" height="100"></canvas></div>
+      <div class="track__side">
+        <div class="track__control-row">
+          <div class="track__control-block">
+            <button class="btn--solo">S</button>
+            <span class="track__control-label">Solo</span>
+          </div>
+          <div class="track__control-block">
+            <button class="btn--mute mute-btn">M</button>
+            <span class="track__control-label">Mute</span>
+          </div>
+        </div>
+        <div class="track__control-block">
+          <div class="track__vol-wrapper">
+            <input id="vol-t1" class="slider volume-slider" type="range" min="0" max="1" step="0.01" value="0.8">
+            <div class="clipping-led" id="peak-t1"></div>
+          </div>
+          <span class="track__control-label">Vol</span>
+        </div>
+        <div class="track__control-block">
+          <label><input id="snap-t1" class="snap-checkbox" type="checkbox"><span class="snap-box"></span></label>
+          <span class="track__control-label">Snap</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="track track-container">
+      <div class="track__swatch track__swatch--cyan"></div>
+      <div class="track__wave-btns wave-buttons">
+        <button class="wave-btn wave-btn--active active" data-wave="sine">∿</button>
+        <button class="wave-btn" data-wave="square">⊓</button>
+        <button class="wave-btn" data-wave="sawtooth">∧</button>
+      </div>
+      <div class="track__freq"><span>1k</span><span>500</span><span>250</span><span>80</span></div>
+      <div class="track__canvas-wrap"><canvas class="track__canvas" width="750" height="100"></canvas></div>
+      <div class="track__side">
+        <div class="track__control-row">
+          <div class="track__control-block">
+            <button class="btn--solo">S</button>
+            <span class="track__control-label">Solo</span>
+          </div>
+          <div class="track__control-block">
+            <button class="btn--mute mute-btn">M</button>
+            <span class="track__control-label">Mute</span>
+          </div>
+        </div>
+        <div class="track__control-block">
+          <div class="track__vol-wrapper">
+            <input id="vol-t2" class="slider volume-slider" type="range" min="0" max="1" step="0.01" value="0.8">
+            <div class="clipping-led" id="peak-t2"></div>
+          </div>
+          <span class="track__control-label">Vol</span>
+        </div>
+        <div class="track__control-block">
+          <label><input id="snap-t2" class="snap-checkbox" type="checkbox"><span class="snap-box"></span></label>
+          <span class="track__control-label">Snap</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="track track-container">
+      <div class="track__swatch track__swatch--yellow"></div>
+      <div class="track__wave-btns wave-buttons">
+        <button class="wave-btn wave-btn--active active" data-wave="sine">∿</button>
+        <button class="wave-btn" data-wave="square">⊓</button>
+        <button class="wave-btn" data-wave="sawtooth">∧</button>
+      </div>
+      <div class="track__freq"><span>1k</span><span>500</span><span>250</span><span>80</span></div>
+      <div class="track__canvas-wrap"><canvas class="track__canvas" width="750" height="100"></canvas></div>
+      <div class="track__side">
+        <div class="track__control-row">
+          <div class="track__control-block">
+            <button class="btn--solo">S</button>
+            <span class="track__control-label">Solo</span>
+          </div>
+          <div class="track__control-block">
+            <button class="btn--mute mute-btn">M</button>
+            <span class="track__control-label">Mute</span>
+          </div>
+        </div>
+        <div class="track__control-block">
+          <div class="track__vol-wrapper">
+            <input id="vol-t3" class="slider volume-slider" type="range" min="0" max="1" step="0.01" value="0.8">
+            <div class="clipping-led" id="peak-t3"></div>
+          </div>
+          <span class="track__control-label">Vol</span>
+        </div>
+        <div class="track__control-block">
+          <label><input id="snap-t3" class="snap-checkbox" type="checkbox"><span class="snap-box"></span></label>
+          <span class="track__control-label">Snap</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="track track-container">
+      <div class="track__swatch track__swatch--green"></div>
+      <div class="track__wave-btns wave-buttons">
+        <button class="wave-btn wave-btn--active active" data-wave="sine">∿</button>
+        <button class="wave-btn" data-wave="square">⊓</button>
+        <button class="wave-btn" data-wave="sawtooth">∧</button>
+      </div>
+      <div class="track__freq"><span>1k</span><span>500</span><span>250</span><span>80</span></div>
+      <div class="track__canvas-wrap"><canvas class="track__canvas" width="750" height="100"></canvas></div>
+      <div class="track__side">
+        <div class="track__control-row">
+          <div class="track__control-block">
+            <button class="btn--solo">S</button>
+            <span class="track__control-label">Solo</span>
+          </div>
+          <div class="track__control-block">
+            <button class="btn--mute mute-btn">M</button>
+            <span class="track__control-label">Mute</span>
+          </div>
+        </div>
+        <div class="track__control-block">
+          <div class="track__vol-wrapper">
+            <input id="vol-t4" class="slider volume-slider" type="range" min="0" max="1" step="0.01" value="0.8">
+            <div class="clipping-led" id="peak-t4"></div>
+          </div>
+          <span class="track__control-label">Vol</span>
+        </div>
+        <div class="track__control-block">
+          <label><input id="snap-t4" class="snap-checkbox" type="checkbox"><span class="snap-box"></span></label>
+          <span class="track__control-label">Snap</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <div class="tools-fx-panel">
+
+    <div class="tools-perf-wrapper">
+      
+      <div class="tools-col">
+        <span class="block-label">Tools</span>
+        <div class="tools-rows-wrapper">
+          <div class="tools-row">
+            <select id="toolSelect" class="select-btn" style="width: 100%;">
+              <option value="draw">Draw</option>
+              <option value="erase">Erase</option>
+            </select>
+          </div>
+          <div class="tools-row">
+            <select id="brushSelect" class="select-btn" style="width: 100%;">
+              <option value="standard">Brush: Standard</option>
+              <option value="variable">Brush: Pressure</option>
+              <option value="calligraphy">Brush: Calligraphy</option>
+              <option value="particles">Brush: Particles</option>
+              <option value="fractal">Brush: Fractal</option>
+              <option value="chord">Brush: Chord</option>
+            </select>
+          </div>
+          <div class="tools-row">
+            <input id="brushSizeSlider" class="slider slider--tools" type="range" min="1" max="20" value="5" style="width: 100%;">
+          </div>
+          <div class="tools-row">
+            <select id="chordSelect" class="select-btn" style="width: 100%;">
+              <option value="major">Chord: Major</option>
+              <option value="minor">Chord: Minor</option>
+              <option value="sus4">Chord: Sus4</option>
+              <option value="dim">Chord: Diminished</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <div class="perf-col" id="trace-module">
+        <span class="block-label">Target</span>
+        <div class="perf-buttons">
+          <button class="track-swatch-btn swatch-sm--pink picker-btn active" data-target="0">T1</button>
+          <button class="track-swatch-btn swatch-sm--cyan picker-btn" data-target="1">T2</button>
+          <button class="track-swatch-btn swatch-sm--yellow picker-btn" data-target="2">T3</button>
+          <button class="track-swatch-btn swatch-sm--green picker-btn" data-target="3">T4</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="poke-grid-outer" id="trace-pad">
+      <span class="poke-label pad-hint">POKE<br>ME</span>
+      <button id="traceClearBtn" style="position:absolute; bottom:5px; right:5px; z-index:100; font-size:9px; padding:2px 4px; display:none;">CLEAR</button>
+    </div>
+
+    <div class="panel-divider"></div>
+
+    <div class="fx-area" id="fx-rack">
+      <div class="fx-mod fx-unit">
+        <div class="fx-mod__head"><span class="fx-mod__name fx-header">Delay</span><div class="fx-power led"></div></div>
+        <div class="fx-mod__body">
+          <div class="fx-track-grid fx-matrix">
+            <button class="fx-track-dot fx-track-dot--pink matrix-btn" data-track="0"></button>
+            <button class="fx-track-dot fx-track-dot--cyan matrix-btn" data-track="1"></button>
+            <button class="fx-track-dot fx-track-dot--yellow matrix-btn" data-track="2"></button>
+            <button class="fx-track-dot fx-track-dot--green matrix-btn" data-track="3"></button>
+          </div>
+          <button class="btn--xy fx-xy-link">X/Y</button>
+          <div class="fx-knobs">
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.5"></div><span class="knob-lbl">TIME</span></div>
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.3"></div><span class="knob-lbl">FDBK</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fx-mod fx-unit">
+        <div class="fx-mod__head"><span class="fx-mod__name fx-header">Reverb</span><div class="fx-power led"></div></div>
+        <div class="fx-mod__body">
+          <div class="fx-track-grid fx-matrix">
+            <button class="fx-track-dot fx-track-dot--pink matrix-btn" data-track="0"></button>
+            <button class="fx-track-dot fx-track-dot--cyan matrix-btn" data-track="1"></button>
+            <button class="fx-track-dot fx-track-dot--yellow matrix-btn" data-track="2"></button>
+            <button class="fx-track-dot fx-track-dot--green matrix-btn" data-track="3"></button>
+          </div>
+          <button class="btn--xy fx-xy-link">X/Y</button>
+          <div class="fx-knobs">
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.6"></div><span class="knob-lbl">DECAY</span></div>
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.2"></div><span class="knob-lbl">MIX</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fx-mod fx-unit">
+        <div class="fx-mod__head"><span class="fx-mod__name fx-header">Vibrato</span><div class="fx-power led"></div></div>
+        <div class="fx-mod__body">
+          <div class="fx-track-grid fx-matrix">
+            <button class="fx-track-dot fx-track-dot--pink matrix-btn" data-track="0"></button>
+            <button class="fx-track-dot fx-track-dot--cyan matrix-btn" data-track="1"></button>
+            <button class="fx-track-dot fx-track-dot--yellow matrix-btn" data-track="2"></button>
+            <button class="fx-track-dot fx-track-dot--green matrix-btn" data-track="3"></button>
+          </div>
+          <button class="btn--xy fx-xy-link">X/Y</button>
+          <div class="fx-knobs">
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.4"></div><span class="knob-lbl">RATE</span></div>
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.5"></div><span class="knob-lbl">DEPTH</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fx-mod fx-unit">
+        <div class="fx-mod__head"><span class="fx-mod__name fx-header">Filter</span><div class="fx-power led"></div></div>
+        <div class="fx-mod__body">
+          <div class="fx-track-grid fx-matrix">
+            <button class="fx-track-dot fx-track-dot--pink matrix-btn" data-track="0"></button>
+            <button class="fx-track-dot fx-track-dot--cyan matrix-btn" data-track="1"></button>
+            <button class="fx-track-dot fx-track-dot--yellow matrix-btn" data-track="2"></button>
+            <button class="fx-track-dot fx-track-dot--green matrix-btn" data-track="3"></button>
+          </div>
+          <button class="btn--xy fx-xy-link">X/Y</button>
+          <div class="fx-knobs">
+            <div class="knob-wrap knob-group"><div class="knob" data-val="1.0"></div><span class="knob-lbl">FREQ</span></div>
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.0"></div><span class="knob-lbl">RES</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fx-mod fx-unit">
+        <div class="fx-mod__head"><span class="fx-mod__name fx-header">Stutter</span><div class="fx-power led"></div></div>
+        <div class="fx-mod__body">
+          <div class="fx-track-grid fx-matrix">
+            <button class="fx-track-dot fx-track-dot--pink matrix-btn" data-track="0"></button>
+            <button class="fx-track-dot fx-track-dot--cyan matrix-btn" data-track="1"></button>
+            <button class="fx-track-dot fx-track-dot--yellow matrix-btn" data-track="2"></button>
+            <button class="fx-track-dot fx-track-dot--green matrix-btn" data-track="3"></button>
+          </div>
+          <button class="btn--xy fx-xy-link">X/Y</button>
+          <div class="fx-knobs">
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.5"></div><span class="knob-lbl">RATE</span></div>
+            <div class="knob-wrap knob-group"><div class="knob" data-val="0.0"></div><span class="knob-lbl">MIX</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fx-mod fx-mod--disabled fx-unit">
+        <div class="fx-mod__head"><span class="fx-mod__name fx-header">Fractal</span><div class="fx-power led" style="visibility:hidden;"></div></div>
+        <div class="fx-mod__body">
+          <div class="fx-track-grid fx-matrix" style="opacity:0; pointer-events:none;">
+            <button class="fx-track-dot matrix-btn"></button><button class="fx-track-dot matrix-btn"></button>
+            <button class="fx-track-dot matrix-btn"></button><button class="fx-track-dot matrix-btn"></button>
+          </div>
+          <button class="btn--xy fx-xy-link">X/Y</button>
+          <div class="fx-knobs">
+            <div class="knob-wrap knob-group knob-container"><div class="knob" data-val="0.5"></div><span class="knob-lbl">CHAOS</span></div>
+            <div class="knob-wrap knob-group knob-container"><div class="knob" data-val="0.5"></div><span class="knob-lbl">MORPH</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="control-bar" id="controls">
+
+    <div class="control-bar__left">
+      
+      <div class="ctrl-top-row">
+        <span class="control-bar__label">Control</span>
+        
+        <div class="ctrl-meta-right">
+          <div class="tempo-wrap">
+            <span>Tempo</span>
+            <input id="bpmInput" class="tempo-box" type="number" min="40" max="240" value="120" style="border:none; outline:none; text-align:center;">
+          </div>
+          
+          <label class="toggle-wrap">
+            <span>Loop</span>
+            <input type="checkbox" id="loopCheckbox" style="display:none" checked>
+            <span class="toggle-sq toggle-ui"></span>
+          </label>
+
+          <label class="toggle-wrap">
+            <span>Harmonize</span>
+            <input type="checkbox" id="harmonizeCheckbox" style="display:none">
+            <span class="toggle-sq toggle-ui"></span>
+          </label>
+          
+          <div id="scaleSelectContainer" style="display:none; margin-left: 2px;">
+            <select id="scaleSelect" class="select-btn" style="width: auto;">
+              <option value="major">Major</option>
+              <option value="minor">Minor</option>
+              <option value="pentatonic">Pentatonic</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctrl-action-blocks">
+        
+        <div class="ctrl-block">
+          <div class="ctrl-btn-row">
+            <button id="playButton" class="btn--ctrl btn--play">PLAY</button>
+            <button id="stopButton" class="btn--ctrl">STOP</button>
+            <button id="undoButton" class="btn--ctrl">UNDO</button>
+          </div>
+          <div class="ctrl-btn-row">
+            <button id="recButton" class="btn--ctrl btn--rec"><span class="rec-dot"></span>REC</button>
+            <button id="clearButton" class="btn--ctrl">CLEAR ALL</button>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="ctrl-block">
+          <div class="ctrl-btn-row">
+            <button id="importButton" class="btn--ctrl">IMPORT SET</button>
+            <input type="file" id="importFileInput" style="display:none" accept=".json" />
+            <button id="exportWavButton" class="btn--ctrl">EXPORT WAV</button>
+          </div>
+          <div class="ctrl-btn-row">
+            <button id="exportButton" class="btn--ctrl">EXPORT SET</button>
+            <button id="helpBtn" class="btn--help">HELP</button>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="ctrl-block" style="width: 120px;">
+          <div class="ctrl-btn-row" style="width: 100%;">
+            <button id="extSyncBtn" class="btn--ext-sync">EXT SYNC</button>
+          </div>
+          <div class="ctrl-btn-row" style="width: 100%;">
+            <select id="midiInputSelect" disabled class="select-btn" style="width: 100%; height: 34px; border: 1px solid var(--color-border-btn);"></select>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="legal-links">
+        <a href="datenschutz.html" target="_blank">Datenschutz</a> &nbsp;|&nbsp; 
+        <a href="impressum.html" target="_blank">Impressum</a> &nbsp;|&nbsp; 
+        &copy; 2026 thehumants.com &nbsp;|&nbsp; 
+        <a href="https://buymeacoffee.com/thepigeon.synthesizer" target="_blank" style="font-weight: bold; color: var(--color-pink);">BUY ME A COFFEE</a>
+      </div>
+
+    </div>
+
+    <div class="pattern-bank" id="pattern-machine">
+      <div class="pattern-bank__head">
+        <span class="pattern-bank__title">Pattern</span>
+        <button id="saveModeBtn" class="btn--save"><span class="btn--save-dot"></span>SAVE</button>
+      </div>
+      <div class="pattern-grid">
+        <span class="pat-row-lbl">A</span>
+        <button class="pat-btn pad pattern-btn" data-bank="A" data-idx="0"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="A" data-idx="1"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="A" data-idx="2"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="A" data-idx="3"></button>
+
+        <span class="pat-row-lbl">B</span>
+        <button class="pat-btn pad pattern-btn" data-bank="B" data-idx="0"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="B" data-idx="1"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="B" data-idx="2"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="B" data-idx="3"></button>
+
+        <span class="pat-row-lbl">C</span>
+        <button class="pat-btn pad pattern-btn" data-bank="C" data-idx="0"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="C" data-idx="1"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="C" data-idx="2"></button>
+        <button class="pat-btn pad pattern-btn" data-bank="C" data-idx="3"></button>
+      </div>
+    </div>
+
+  </footer>
+
+</div>
+
+<div id="help-overlay">
+  <div class="help-content">
+    <div class="help-controls">
+      <button id="langToggleBtn">English</button>
+      <button id="closeHelpBtn">X</button>
+    </div>
+
+    <div id="help-de">
+      <h2>Sound Drawing Sequencer</h2>
+      <div class="help-grid-expanded">
+        <div class="help-section">
+          <h3>1. Loslegen: Zeichne deinen Sound</h3>
+          <ul>
+            <li><strong>Pattern wählen:</strong> Klicke unten rechts in der <em>Pattern Bank</em> auf ein leeres Pad (z.B. unter 'A'), um dort deinen ersten Loop zu starten.</li>
+            <li><strong>Zeichnen:</strong> Klicke und ziehe mit der Maus auf den weißen Leinwänden (Canvas), um Töne einzuzeichnen. Oben = hohe Töne, Unten = tiefe Töne.</li>
+            <li><strong>Tools:</strong> Wähle links zwischen <em>Draw</em> (Zeichnen) und <em>Erase</em> (Radieren).</li>
+            <li><strong>Pinsel:</strong> Nutze verschiedene Brushes (z.B. Particles oder Chord) für komplexe Klangtexturen.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>2. Die 4 Tonspuren (Tracks)</h3>
+          <ul>
+            <li><strong>Wellenformen:</strong> Wähle den Grundklang pro Spur. <strong>∿</strong> (Weicher Bass/Lead), <strong>⊓</strong> (Hohler 8-Bit Sound), <strong>∧</strong> (Scharfer Synth).</li>
+            <li><strong>Snap:</strong> Aktivierst du 'Snap', werden deine Zeichnungen auf ein strenges rhythmisches Raster gezwungen (Quantisierung).</li>
+            <li><strong>Solo / Mute:</strong> Schalte einzelne Spuren stumm oder höre sie isoliert.</li>
+            <li><strong>Volume:</strong> Regle die Lautstärke jeder Spur über den Slider ab.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>3. Live spielen & Effekte</h3>
+          <ul>
+            <li><strong>Poke Me Pad:</strong> Wähle im <em>Target</em>-Feld eine Spur aus. Klicke auf das Pad, um live Töne abzufeuern (X = Zeit, Y = Tonhöhe).</li>
+            <li><strong>Effekte (FX):</strong> Das Rack bietet 6 Effekte. Klicke im Grid auf die Farbe einer Spur, um diese durch den jeweiligen Effekt zu schleifen.</li>
+            <li><strong>X/Y Link:</strong> Ist dies aktiv, steuert das <em>Poke Me Pad</em> keine Töne mehr, sondern bedient die beiden Effekt-Regler live (X = Links, Y = Rechts).</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>4. Rhythmus & Sync</h3>
+          <ul>
+            <li><strong>Play/Stop:</strong> Starte den Loop (Shortcut: <em>Leertaste</em>).</li>
+            <li><strong>Harmonize:</strong> Zwingt alle eingezeichneten Frequenzen auf eine feste musikalische Tonleiter (z.B. Minor/Moll).</li>
+            <li><strong>EXT SYNC (DAW Setup):</strong> Erstelle ein virtuelles MIDI-Kabel (Mac: <em>IAC-Treiber</em>, Win: <em>loopMIDI</em>). Aktiviere in deiner DAW (z.B. Ableton) den Sync-Out für dieses Kabel. Wähle den Port im Dropdown und aktiviere EXT SYNC.</li>
+          </ul>
+        </div>
+        <div class="help-section" style="grid-column: 1 / -1;">
+          <h3>5. Speichern, Export & Aktionen</h3>
+          <ul style="column-count: 2; column-gap: 40px;">
+            <li><strong>Pattern speichern:</strong> Klicke auf <strong>SAVE</strong> (pulsiert rot) und danach auf ein leeres Pad in der Bank, um den aktuellen Loop zu sichern.</li>
+            <li><strong>Live Arrangement:</strong> Klicke während dem Playback auf gespeicherte Pads, um musikalisch zwischen ihnen zu wechseln.</li>
+            <li><strong>Export WAV:</strong> Rendert deinen Loop offline als saubere Audiodatei.</li>
+            <li><strong>Live REC:</strong> Nimmt eine Performance auf dem Pad live auf und lädt sie direkt als WAV herunter.</li>
+            <li><strong>Set Import/Export:</strong> Speichert dein gesamtes Projekt als Datei ab.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="help-en" style="display: none;">
+      <h2>Sound Drawing Sequencer</h2>
+      <div class="help-grid-expanded">
+        <div class="help-section">
+          <h3>1. Get Started: Draw your Sound</h3>
+          <ul>
+            <li><strong>Select Pattern:</strong> Click an empty pad in the <em>Pattern Bank</em> (bottom right, e.g., row 'A') to start your first loop.</li>
+            <li><strong>Draw:</strong> Click and drag on the white canvas to draw notes. Top = high pitch, Bottom = low pitch.</li>
+            <li><strong>Tools:</strong> Choose between <em>Draw</em> and <em>Erase</em> on the left.</li>
+            <li><strong>Brush:</strong> Use different brushes (e.g., Particles or Chord) for complex textures.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>2. The 4 Tracks</h3>
+          <ul>
+            <li><strong>Waveforms:</strong> Choose the core sound. <strong>∿</strong> (Smooth Bass/Lead), <strong>⊓</strong> (Hollow 8-Bit), <strong>∧</strong> (Sharp Synth).</li>
+            <li><strong>Snap:</strong> Forces your drawn lines onto a strict rhythmic grid (Quantization).</li>
+            <li><strong>Solo / Mute:</strong> Silence tracks or listen to them in isolation.</li>
+            <li><strong>Volume:</strong> Adjust the level of each track separately.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>3. Live Performance & FX</h3>
+          <ul>
+            <li><strong>Poke Me Pad:</strong> Select a <em>Target</em> track. Click the pad to trigger sounds live (X = Time, Y = Pitch).</li>
+            <li><strong>Effects (FX):</strong> Click the colored squares in an FX module to route a track into it.</li>
+            <li><strong>X/Y Link:</strong> Hijacks the Poke Me pad to control the two FX knobs like a live mixer instead of playing notes.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>4. Rhythm & Sync</h3>
+          <ul>
+            <li><strong>Play/Stop:</strong> Start the loop (Shortcut: <em>Spacebar</em>).</li>
+            <li><strong>Harmonize:</strong> Forces all your drawings into a clean musical scale (e.g., Minor).</li>
+            <li><strong>EXT SYNC (DAW Setup):</strong> Use a virtual MIDI cable (Mac: <em>IAC Driver</em>, Win: <em>loopMIDI</em>). Enable Sync output for it in your DAW (e.g., Ableton). Select the port here and hit EXT SYNC.</li>
+          </ul>
+        </div>
+        <div class="help-section" style="grid-column: 1 / -1;">
+          <h3>5. Save, Export & Actions</h3>
+          <ul style="column-count: 2; column-gap: 40px;">
+            <li><strong>Save Pattern:</strong> Click <strong>SAVE</strong> (pulses red), then click an empty pad to store your current loop.</li>
+            <li><strong>Live Arrangement:</strong> Click saved pads during playback to queue and switch patterns seamlessly.</li>
+            <li><strong>Export WAV:</strong> Renders your perfect loop offline as an audio file.</li>
+            <li><strong>Live REC:</strong> Records your performance on the pad and downloads it as a WAV file.</li>
+            <li><strong>Import/Export Set:</strong> Saves your entire session to disk.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="custom-eraser"></div>
+
+<script src="canvas.js" type="module"></script>
+<script src="audio.js" type="module"></script>
+<script src="ui.js" type="module"></script>
+<script src="midi.js" type="module"></script>
+<script src="main.js" type="module"></script>
+
+</body>
+</html>
