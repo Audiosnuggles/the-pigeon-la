@@ -491,6 +491,16 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                 ivs.forEach((iv, i) => {
                     const osc = targetCtx.createOscillator(), g = targetCtx.createGain(); osc.type = track.wave;
                     
+                    // NEU: Der WaveShaper für den MORPH-Effekt des Fraktal-Pinsels
+                    let shaper = null;
+                    if (brush === "fractal") {
+                        shaper = targetCtx.createWaveShaper();
+                        const morphVal = getKnobVal("FRACTAL", "MORPH") || 0;
+                        shaper.curve = getDistortionCurve(80 + (morphVal * 400)); // Audio.js Funktion nutzen
+                        shaper.oversample = '4x';
+                        if (targetCtx === audioCtx) activeWaveShapers.push(shaper);
+                    }
+
                     let tfPairs = [];
                     sorted.forEach(p => {
                         let cX = p.x, cY = p.y;
@@ -501,7 +511,9 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         const t = Math.max(0, start + (cX / 750) * playbackDuration); 
                         let f = mapYToFrequency(cY, 100); 
                         if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
-                        tfPairs.push({ t, f, cX }); 
+                        
+                        // WICHTIG: origY und rY mitspeichern für das Live-Chaos-Update!
+                        tfPairs.push({ t, f, cX, origY: p.y, rY: p.rY }); 
                     });
                     
                     tfPairs.sort((a, b) => a.t - b.t);
@@ -510,13 +522,20 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     const sT = tfPairs[0].t;
                     const eT = tfPairs[tfPairs.length - 1].t;
 
-                    const maxVol = brush === "xenakis" ? 0.15 : 0.3;
+                    // Fraktal-Pinsel minimal leiser machen, da die Distortion (Morph) sehr aggressiv sein kann
+                    const maxVol = brush === "xenakis" ? 0.15 : (brush === "fractal" ? 0.2 : 0.3);
                     g.gain.setValueAtTime(0, sT); 
                     g.gain.linearRampToValueAtTime(maxVol, sT + 0.02); 
                     g.gain.setValueAtTime(maxVol, eT); 
                     g.gain.linearRampToValueAtTime(0, eT + 0.1);
 
-                    osc.connect(g); 
+                    // Routing: Wenn Fraktal, dann durch den Shaper jagen
+                    if (shaper) {
+                        osc.connect(shaper);
+                        shaper.connect(g);
+                    } else {
+                        osc.connect(g); 
+                    }
                     g.connect(trkG); 
                     
                     tfPairs.forEach(pair => {
@@ -533,6 +552,32 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         try { osc.frequency.linearRampToValueAtTime(playFreq, pair.t); } 
                         catch(e) { osc.frequency.setTargetAtTime(playFreq, pair.t, 0.01); }
                     });
+                    
+                    // DER NINJA-TRICK: Live-Update der Frequenzen bei Regler-Drehung
+                    osc.updateChaos = (newChaos) => {
+                        if (brush !== "fractal") return;
+                        const now = targetCtx.currentTime;
+                        
+                        // 1. Alle zukünftigen (alten) Frequenz-Änderungen sofort löschen
+                        osc.frequency.cancelScheduledValues(now); 
+                        
+                        // 2. Frequenzen mit dem neuen Chaos-Wert in Echtzeit neu berechnen
+                        tfPairs.forEach(pair => {
+                            if (pair.t >= now) {
+                                let cY = pair.origY + (pair.rY || 0) * 100 * newChaos;
+                                let f = mapYToFrequency(cY, 100);
+                                if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
+
+                                try { osc.frequency.linearRampToValueAtTime(f, pair.t); } 
+                                catch(e) { osc.frequency.setTargetAtTime(f, pair.t, 0.01); }
+                            }
+                        });
+                    };
+                    
+                    osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
+                    osc.start(sT); osc.stop(eT + 0.2); 
+                    if (targetCtx === audioCtx) activeNodes.push(osc);
+                });
                     
                     osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
                     osc.start(sT); osc.stop(eT + 0.2); 
