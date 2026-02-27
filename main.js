@@ -491,7 +491,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     sorted.forEach(p => {
                         let cX = p.x, cY = p.y;
                         if (brush === "fractal") {
-                            // Die optischen Abweichungen exakt in X (Rhythmus) und Y (Tonhöhe) umrechnen
                             cX += (p.rX || 0) * 50 * fractalChaos;
                             cY += (p.rY || 0) * 100 * fractalChaos;
                         }
@@ -501,7 +500,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         tfPairs.push({ t, f });
                     });
                     
-                    // Verhindert WebAudio-Crashes bei Zeitverschiebungen
                     tfPairs.sort((a, b) => a.t - b.t);
                     if (tfPairs.length === 0) return;
                     
@@ -513,13 +511,47 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     g.gain.setValueAtTime(0.3, eT); 
                     g.gain.linearRampToValueAtTime(0, eT + 0.1);
 
-                    osc.connect(g); // <-- Rein, pur, ohne Distortion!
+                    osc.connect(g); 
                     g.connect(trkG); 
                     
                     tfPairs.forEach(pair => {
                         try { osc.frequency.linearRampToValueAtTime(pair.f * Math.pow(2, iv/12), pair.t); } 
                         catch(e) { osc.frequency.setTargetAtTime(pair.f * Math.pow(2, iv/12), pair.t, 0.01); }
                     });
+
+                    // NEU: Die Superkraft-Funktion für den Live-Pitch-Bend
+                    if (targetCtx === audioCtx && brush === "fractal") {
+                        osc.updateChaos = (newChaos) => {
+                            const now = audioCtx.currentTime;
+                            try { 
+                                osc.frequency.cancelAndHoldAtTime(now); 
+                            } catch(e) { 
+                                osc.frequency.cancelScheduledValues(now); 
+                            }
+                            
+                            let futurePairs = [];
+                            sorted.forEach(p => {
+                                // WICHTIG: Die Zeitachse (X) bleibt für den aktuell laufenden Ton starr, 
+                                // um Knackser und Engine-Crashes zu verhindern!
+                                let cX = p.x + (p.rX || 0) * 50 * fractalChaos; 
+                                const t = Math.max(0, start + (cX / 750) * playbackDuration);
+                                
+                                // Nur Töne neu berechnen, die in der Zukunft liegen
+                                if (t > now) {
+                                    let cY = p.y + (p.rY || 0) * 100 * newChaos; // Neues Y-Chaos anwenden
+                                    let f = mapYToFrequency(cY, 100);
+                                    if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
+                                    futurePairs.push({ t, f });
+                                }
+                            });
+                            
+                            futurePairs.sort((a, b) => a.t - b.t);
+                            futurePairs.forEach(pair => {
+                                try { osc.frequency.linearRampToValueAtTime(pair.f * Math.pow(2, iv/12), pair.t); }
+                                catch(e) { osc.frequency.setTargetAtTime(pair.f * Math.pow(2, iv/12), pair.t, 0.01); }
+                            });
+                        };
+                    }
                     
                     osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
                     osc.start(sT); osc.stop(eT + 0.2); 
@@ -1100,6 +1132,15 @@ function setupFX() {
                 if (param === "MORPH") {
                     const newCurve = getDistortionCurve(80 + (val * 400)); 
                     activeWaveShapers.forEach(sh => sh.curve = newCurve);
+                }
+                if (param === "CHAOS") {
+                    // NEU: Live Automation Override (Ninja Trick!)
+                    // Ruft alle laufenden Töne an und überschreibt ihre Pitch-Kurven
+                    if (audioCtx) {
+                        activeNodes.forEach(osc => {
+                            if (osc.updateChaos) osc.updateChaos(val);
+                        });
+                    }
                 }
             }
         });

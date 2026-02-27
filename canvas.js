@@ -64,7 +64,8 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
                 switch(brush){ 
                     case "variable": drawSegmentVariable(t.ctx, pts, i-1, i, size); break; 
                     case "calligraphy": drawSegmentCalligraphy(t.ctx, pts, i-1, i, size); break; 
-                    case "fractal": drawSegmentFractal(t.ctx, pts, i-1, i, size, liveChaos); break; 
+                    case "fractal": drawSegmentFractal(t.ctx, pts, i-1, i, size, liveChaos); break; 			
+		    case "xenakis": drawSegmentXenakis(t.ctx, pts, i-1, i, size); break; // <-- NEU
                     default: drawSegmentStandard(t.ctx, pts, i-1, i, size); 
                 } 
             }
@@ -75,4 +76,21 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
         t.ctx.save(); t.ctx.beginPath(); t.ctx.strokeStyle = "red"; t.ctx.lineWidth = 2; 
         t.ctx.moveTo(hx,0); t.ctx.lineTo(hx,100); t.ctx.stroke(); t.ctx.restore(); 
     }
+}
+
+// NEU: Der Xenakis-Schwarm Pinsel
+function drawSegmentXenakis(ctx, pts, idx1, idx2, size) { 
+    ctx.lineCap = "round"; 
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.4)"; // Leicht transparent für den Schwarm-Look
+    for (let i = -2; i <= 2; i++) { 
+        ctx.lineWidth = Math.max(1, size / 3); 
+        ctx.beginPath(); 
+        // Sanfte Sinus-Wellen, die sich gegenseitig kreuzen
+        const wave1 = Math.sin(pts[idx1].x * 0.04 + i * 1.5) * size * 1.5; 
+        const wave2 = Math.sin(pts[idx2].x * 0.04 + i * 1.5) * size * 1.5; 
+        ctx.moveTo(pts[idx1].x, pts[idx1].y + wave1 + (i * size * 0.5)); 
+        ctx.lineTo(pts[idx2].x, pts[idx2].y + wave2 + (i * size * 0.5)); 
+        ctx.stroke(); 
+    } 
+    ctx.strokeStyle = "#000"; // Reset für die anderen Pinsel
 }
