@@ -334,15 +334,12 @@ function startLiveSynth(track, y) {
     
     liveNodes = []; liveGainNode = audioCtx.createGain(); liveGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     
+    // NEU: Lautstärke drosseln für Xenakis, sonst übersteuert es!
     const brush = brushSelect.value;
-    
-    // NEU: Lautstärke bei Xenakis drosseln, weil 5 Töne gleichzeitig spielen
     const maxVol = brush === "xenakis" ? 0.15 : 0.3;
     liveGainNode.gain.linearRampToValueAtTime(maxVol, audioCtx.currentTime + 0.01);
     
     let currentY = y;
-    
-    // CHAOS: Y-Koordinate direkt visuell anpassen
     if (brush === "fractal" && track.curSeg && track.curSeg.points.length > 0) {
         const fractalChaos = getKnobVal("FRACTAL", "CHAOS") || 0;
         const p = track.curSeg.points[track.curSeg.points.length - 1];
@@ -352,7 +349,7 @@ function startLiveSynth(track, y) {
     let freq = mapYToFrequency(currentY, 100); 
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
-    // NEU: Xenakis bekommt 5 Stimmen mit -15 bis +15 Cents Verstimmung
+    // NEU: Xenakis Stimmen (Detune)
     const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]);
 
     ivs.forEach(iv => {
@@ -385,7 +382,7 @@ function updateLiveSynth(track, y) {
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
     liveNodes.forEach((n, i) => { 
-        // NEU: Hier ebenfalls Xenakis in den Tonhöhen-Wechsel aufnehmen
+        // NEU: Xenakis im Update
         const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]); 
         n.frequency.setTargetAtTime(freq * Math.pow(2, (ivs[i] || 0) / 12), audioCtx.currentTime, 0.02); 
     });
@@ -395,17 +392,12 @@ function stopLiveSynth() {
     if (!liveGainNode) return;
     const gn = liveGainNode; 
     const ns = liveNodes; 
-    
-    // Ton sanft ausfaden
     gn.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
-    
-    // Nach dem Ausfaden komplett abschalten
     setTimeout(() => { 
         ns.forEach(n => { try { n.stop(); n.disconnect(); } catch(e){} }); 
         if (gn.out) gn.out.disconnect(); 
         gn.disconnect(); 
     }, 100);
-    
     liveNodes = []; 
     liveGainNode = null;
 }
@@ -414,21 +406,16 @@ function triggerParticleGrain(track, y) {
     const anySolo = tracks.some(t => t.solo);
     const isAudible = anySolo ? track.solo : !track.mute;
     if (!isAudible || track.vol < 0.01) return; 
-    
     let freq = mapYToFrequency(y, 100); 
     if(harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value); 
-    
     const osc = audioCtx.createOscillator(); osc.type = track.wave; osc.frequency.value = freq; 
     const env = audioCtx.createGain(); const now = audioCtx.currentTime;
-    
     env.gain.setValueAtTime(0, now); 
     env.gain.linearRampToValueAtTime(0.4, now + 0.01); 
     env.gain.exponentialRampToValueAtTime(0.01, now + 0.15); 
-    
     const trackG = audioCtx.createGain(); trackG.gain.value = track.vol;
     osc.connect(env).connect(trackG); 
     connectTrackToFX(trackG, track.index);
-    
     osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
     osc.start(now); osc.stop(now + 0.2); 
     activeNodes.push(osc);
@@ -489,7 +476,7 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             } else {
-                // NEU: Auch in der fertigen Zeitleiste Xenakis Intervalle berechnen
+                // NEU: Xenakis in der Zeitleiste
                 const ivs = (brush === "chord") ? chordIntervals[seg.chordType || "major"] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]);
                 
                 ivs.forEach(iv => {
@@ -514,7 +501,7 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     const sT = tfPairs[0].t;
                     const eT = tfPairs[tfPairs.length - 1].t;
 
-                    // NEU: Xenakis Lautstärke (maxVol) drosseln
+                    // NEU: Lautstärke drosseln für Xenakis
                     const maxVol = brush === "xenakis" ? 0.15 : 0.3;
                     g.gain.setValueAtTime(0, sT); 
                     g.gain.linearRampToValueAtTime(maxVol, sT + 0.02); 
