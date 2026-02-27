@@ -165,6 +165,12 @@ function updateFractalFxUI() {
             knobs.forEach(k => k.style.opacity = isFractal ? "1" : "0.5");
         }
     });
+
+    // NEU: Verstecke das Chord-Dropdown, wenn Chord nicht ausgewählt ist
+    const chordRow = document.getElementById("chordSelectRow");
+    if (chordRow) {
+        chordRow.style.display = (brushSelect.value === "chord") ? "block" : "none";
+    }
 }
 brushSelect.addEventListener("change", updateFractalFxUI);
 updateFractalFxUI(); 
@@ -378,7 +384,6 @@ function startLiveSynth(track, x, y) {
         } else if (brush === "chord") {
             finalDetune = iv;
         } else if (brush === "rorschach" && iv === "mirror") {
-            // RORSCHACH: Der zweite Oszillator spielt exakt die invertierte Frequenz!
             currentFreq = mapYToFrequency(100 - currentY, 100);
             if (harmonizeCheckbox.checked) currentFreq = quantizeFrequency(currentFreq, scaleSelect.value);
         }
@@ -420,7 +425,7 @@ function updateLiveSynth(track, x, y) {
         } else if (brush === "chord") {
             const ivs = chordIntervals[chordSelect.value] || [0];
             finalDetune = ivs[i] || 0;
-        } else if (brush === "rorschach" && i === 1) { // Der gespiegelte Oszillator
+        } else if (brush === "rorschach" && i === 1) { 
             currentFreq = mapYToFrequency(100 - currentY, 100);
             if (harmonizeCheckbox.checked) currentFreq = quantizeFrequency(currentFreq, scaleSelect.value);
         }
@@ -554,7 +559,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                             cY += (p.rY || 0) * 100 * fractalChaos;
                         }
 
-                        // RORSCHACH: Wenn wir den gespiegelten Oszillator berechnen, invertieren wir Y
                         if (brush === "rorschach" && iv === "mirror") {
                             cY = 100 - cY;
                         }
