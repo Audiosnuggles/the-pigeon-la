@@ -9,7 +9,6 @@ function drawSegmentStandard(ctx, pts, idx1, idx2, size) { ctx.lineWidth = size;
 function drawSegmentVariable(ctx, pts, idx1, idx2, size) { const dist = Math.hypot(pts[idx2].x - pts[idx1].x, pts[idx2].y - pts[idx1].y); ctx.lineWidth = size * (1 + Math.max(0, (10 - dist) / 5)); ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(pts[idx1].x, pts[idx1].y); ctx.lineTo(pts[idx2].x, pts[idx2].y); ctx.stroke(); }
 function drawSegmentCalligraphy(ctx, pts, idx1, idx2, size) { const angle = -Math.PI / 4, dx = Math.cos(angle) * size, dy = Math.sin(angle) * size; ctx.fillStyle = "#000"; ctx.beginPath(); ctx.moveTo(pts[idx1].x - dx, pts[idx1].y - dy); ctx.lineTo(pts[idx1].x + dx, pts[idx1].y + dy); ctx.lineTo(pts[idx2].x + dx, pts[idx2].y + dy); ctx.lineTo(pts[idx2].x - dx, pts[idx2].y - dy); ctx.fill(); }
 
-// FIX: Particles nutzen wieder pures Math.random() für die ständige Animation
 function drawSegmentParticles(ctx, pts, idx1, idx2, size) { 
     ctx.fillStyle = "rgba(0,0,0,0.6)"; 
     for(let i=0; i<2; i++) { 
@@ -20,27 +19,76 @@ function drawSegmentParticles(ctx, pts, idx1, idx2, size) {
     } 
 }
 
-// FIX: Fractal nutzt die gespeicherten rX/rY für konsistentes Chaos
-function drawSegmentFractal(ctx, pts, idx1, idx2, size, liveChaos) { 
-    ctx.lineWidth = size; ctx.lineCap = "round"; ctx.beginPath(); 
+// ECHTES VISUELLES MORPHING: Die Linie verzerrt sich geometrisch!
+function drawSegmentFractal(ctx, pts, idx1, idx2, size, liveChaos, liveMorph) { 
+    // 1. Die Chaos-Berechnung (wie stark die Punkte selbst schwanken)
     const jx1 = (pts[idx1].rX||0) * 50 * liveChaos; const jy1 = (pts[idx1].rY||0) * 100 * liveChaos;
     const jx2 = (pts[idx2].rX||0) * 50 * liveChaos; const jy2 = (pts[idx2].rY||0) * 100 * liveChaos;
-    ctx.moveTo(pts[idx1].x + jx1, pts[idx1].y + jy1); 
-    ctx.lineTo(pts[idx2].x + jx2, pts[idx2].y + jy2); 
-    ctx.stroke(); 
+    
+    const x1 = pts[idx1].x + jx1; const y1 = pts[idx1].y + jy1;
+    const x2 = pts[idx2].x + jx2; const y2 = pts[idx2].y + jy2;
+
+    ctx.lineCap = liveMorph > 0.5 ? "square" : "round"; 
+    
+    if (liveMorph > 0.05) {
+        // Normalenvektor berechnen (Vektor senkrecht zur Zeichenrichtung)
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len; 
+        const ny = dx / len;
+        
+        // Wie stark schlägt die Verzerrung aus?
+        const distAmount = liveMorph * size * 1.5;
+        
+        // Abwechselnder Ausschlag für den "Square-Wave/Sägezahn" Effekt
+        const side1 = (idx1 % 2 === 0) ? 1 : -1;
+        const side2 = (idx2 % 2 === 0) ? 1 : -1;
+
+        ctx.strokeStyle = "#000";
+
+        // Die gezackte Verzerrungslinie (Distortion Fuzz)
+        ctx.lineWidth = size * (1 - liveMorph * 0.3);
+        ctx.beginPath();
+        ctx.moveTo(x1 + nx * distAmount * side1, y1 + ny * distAmount * side1);
+        ctx.lineTo(x2 + nx * distAmount * side2, y2 + ny * distAmount * side2);
+        ctx.stroke();
+        
+        // Dünner, solider Kern in der Mitte
+        ctx.lineWidth = Math.max(1, size * 0.2);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+    } else {
+        // Normaler Fraktal-Pinsel ohne Morph
+        ctx.lineWidth = size; 
+        ctx.strokeStyle = "#000";
+        ctx.beginPath(); 
+        ctx.moveTo(x1, y1); 
+        ctx.lineTo(x2, y2); 
+        ctx.stroke(); 
+    }
 }
 
 export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors) {
     drawGrid(t);
     
-    // Live-Chaos abgreifen
+    // Live-Chaos und Live-Morph abgreifen
     let liveChaos = 0;
+    let liveMorph = 0;
+    
     document.querySelectorAll('.fx-unit').forEach(unit => {
         const header = unit.querySelector('.fx-header');
         if (header && header.textContent.toUpperCase().includes("FRACTAL")) {
             unit.querySelectorAll('.knob').forEach(k => {
-                if (k.nextElementSibling && k.nextElementSibling.textContent.trim() === "CHAOS") {
+                const paramName = k.nextElementSibling ? k.nextElementSibling.textContent.trim() : "";
+                if (paramName === "CHAOS") {
                     liveChaos = parseFloat(k.dataset.val || 0);
+                }
+                if (paramName === "MORPH") {
+                    liveMorph = parseFloat(k.dataset.val || 0);
                 }
             });
         }
@@ -64,8 +112,8 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
                 switch(brush){ 
                     case "variable": drawSegmentVariable(t.ctx, pts, i-1, i, size); break; 
                     case "calligraphy": drawSegmentCalligraphy(t.ctx, pts, i-1, i, size); break; 
-                    case "fractal": drawSegmentFractal(t.ctx, pts, i-1, i, size, liveChaos); break; 			
-		    case "xenakis": drawSegmentXenakis(t.ctx, pts, i-1, i, size); break; // <-- NEU
+                    case "fractal": drawSegmentFractal(t.ctx, pts, i-1, i, size, liveChaos, liveMorph); break; 			
+                    case "xenakis": drawSegmentXenakis(t.ctx, pts, i-1, i, size); break;
                     default: drawSegmentStandard(t.ctx, pts, i-1, i, size); 
                 } 
             }
@@ -78,19 +126,17 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
     }
 }
 
-// NEU: Der Xenakis-Schwarm Pinsel
 function drawSegmentXenakis(ctx, pts, idx1, idx2, size) { 
     ctx.lineCap = "round"; 
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.4)"; // Leicht transparent für den Schwarm-Look
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.4)"; 
     for (let i = -2; i <= 2; i++) { 
         ctx.lineWidth = Math.max(1, size / 3); 
         ctx.beginPath(); 
-        // Sanfte Sinus-Wellen, die sich gegenseitig kreuzen
         const wave1 = Math.sin(pts[idx1].x * 0.04 + i * 1.5) * size * 1.5; 
         const wave2 = Math.sin(pts[idx2].x * 0.04 + i * 1.5) * size * 1.5; 
         ctx.moveTo(pts[idx1].x, pts[idx1].y + wave1 + (i * size * 0.5)); 
         ctx.lineTo(pts[idx2].x, pts[idx2].y + wave2 + (i * size * 0.5)); 
         ctx.stroke(); 
     } 
-    ctx.strokeStyle = "#000"; // Reset für die anderen Pinsel
+    ctx.strokeStyle = "#000"; 
 }
