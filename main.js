@@ -29,8 +29,7 @@ const workerCode = `
 const timerWorker = new Worker(URL.createObjectURL(new Blob([workerCode], {type: 'application/javascript'})));
 timerWorker.onmessage = () => { if (isPlaying) loop(); };
 
-const chordIntervals = { major: [0, 4, 7], minor: [0, 3, 7], diminished: [0, 3, 6], augmented: [0, 4, 8], sus2: [0, 2, 7], sus4: [0, 5, 7] };
-const chordColors = ['#FF5733', '#33FF57', '#3357FF'];
+const chordIntervals = { major: [0, 4, 7], minor: [0, 3, 7], diminished: [0, 3, 6], dim: [0, 3, 6], augmented: [0, 4, 8], sus2: [0, 2, 7], sus4: [0, 5, 7] };
 
 const toolSelect = document.getElementById("toolSelect"),
       brushSelect = document.getElementById("brushSelect"),
