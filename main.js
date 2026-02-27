@@ -220,22 +220,16 @@ function applyAllFXFromUI() {
 }
 
 function loadInitialData() {
-    // Ohne "?t=...", damit der Browser die 1.2MB große Datei cachen darf und sofort lädt!
     fetch('default_set.json')
         .then(res => res.json())
         .then(data => {
-            // 1. Bänke laden und die Punkte (filled) auf den Pads anzeigen
             if (data.banks) { 
                 patternBanks = data.banks; 
                 updatePadUI(patternBanks); 
             }
-            
-            // 2. Das aktuelle Bild auf dem Canvas zeichnen
             if (data.current) {
                 loadPatternData(data.current);
             }
-
-            // 3. Das erste belegte Pad suchen und als "aktiv" (leuchtend) markieren
             let foundActive = false;
             for (let bank of ['A', 'B', 'C']) {
                 for (let i = 0; i < 4; i++) {
@@ -308,13 +302,10 @@ function loadPatternData(d) {
             const cont = t.canvas.closest('.track-container');
             if (cont) {
                 cont.querySelector(".volume-slider").value = t.vol;
-                
                 const muteBtn = cont.querySelector(".mute-btn");
                 if (muteBtn) muteBtn.classList.toggle("active", t.mute);
-                
                 const soloBtn = cont.querySelector(".btn--solo");
                 if (soloBtn) soloBtn.classList.toggle("active", t.solo);
-                
                 const snapBox = cont.querySelector(".snap-checkbox"); if(snapBox) snapBox.checked = t.snap;
                 cont.querySelectorAll(".wave-btn").forEach(btn => {
                     if (btn.dataset.wave === t.wave) btn.classList.add("active");
@@ -326,6 +317,10 @@ function loadPatternData(d) {
         applyAllVolumes();
     }
 }
+
+// ==========================================
+// AUDIO SYNTHESE (LIVE & PLAYBACK)
+// ==========================================
 
 function startLiveSynth(track, x, y) {
     const anySolo = tracks.some(t => t.solo);
@@ -348,19 +343,17 @@ function startLiveSynth(track, x, y) {
     let freq = mapYToFrequency(currentY, 100); 
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
-    // NEU: Platzhalter-Array für Xenakis, damit wir 5 Oszillatoren mit Index (i) erzeugen
     const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [0, 1, 2, 3, 4] : [0]);
 
     ivs.forEach((iv, i) => {
         const osc = audioCtx.createOscillator(); 
         osc.type = track.wave;
 
-        // ECHTES SCANNING
         let finalDetune = 0;
         if (brush === "xenakis") {
             const offset = i - 2; 
             const waveMod = Math.sin(x * 0.04 + offset * 1.5);
-            finalDetune = (offset * 0.05) + (waveMod * 0.15); // Basis-Verstimmung + Welle
+            finalDetune = (offset * 0.05) + (waveMod * 0.15); 
         } else if (brush === "chord") {
             finalDetune = iv;
         }
@@ -392,7 +385,6 @@ function updateLiveSynth(track, x, y) {
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
     liveNodes.forEach((n, i) => { 
-        // ECHTES SCANNING IM UPDATE
         let finalDetune = 0;
         if (brush === "xenakis") {
             const offset = i - 2; 
@@ -494,7 +486,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             } else {
-                // NEU: Xenakis in der Zeitleiste mit ECHTEM SCANNING
                 const ivs = (brush === "chord") ? chordIntervals[seg.chordType || "major"] : (brush === "xenakis" ? [0, 1, 2, 3, 4] : [0]);
                 
                 ivs.forEach((iv, i) => {
@@ -510,7 +501,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         const t = Math.max(0, start + (cX / 750) * playbackDuration); 
                         let f = mapYToFrequency(cY, 100); 
                         if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
-                        // WICHTIG: cX mitspeichern, damit wir es gleich in die Sinus-Formel werfen können!
                         tfPairs.push({ t, f, cX }); 
                     });
                     
@@ -534,7 +524,7 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         if (brush === "xenakis") {
                             const offset = i - 2;
                             const waveMod = Math.sin(pair.cX * 0.04 + offset * 1.5);
-                            finalDetune = (offset * 0.05) + (waveMod * 0.15); // Exakt wie im Live-Modus
+                            finalDetune = (offset * 0.05) + (waveMod * 0.15);
                         } else if (brush === "chord") {
                             finalDetune = iv;
                         }
@@ -549,6 +539,9 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             }
+        });
+    });
+}
 
 function setupDrawing(track) {
     let drawing = false;
@@ -743,8 +736,6 @@ function setupMainControls() {
             const bpm = parseFloat(document.getElementById("bpmInput").value) || 120;
             const loopDur = (60 / bpm) * 32;
             const sampleRate = audioCtx ? audioCtx.sampleRate : 44100;
-            
-            // FIX: OfflineAudioContext verlangt glatte Zahlen! Math.floor schützt vor Abstürzen
             const lengthInSamples = Math.floor(sampleRate * loopDur);
             const offCtx = new OfflineAudioContext(2, lengthInSamples, sampleRate);
             
@@ -758,24 +749,20 @@ function setupMainControls() {
                 stutter: offCtx.createGain(), stutterLfo: offCtx.createOscillator()
             };
             
-            // DELAY
             fxOff.delay.delayTime.value = getKnobVal("DELAY", "TIME") * 1.0;
             fxOff.delayFbk.gain.value = getKnobVal("DELAY", "FDBK") * 0.9;
             fxOff.delay.connect(fxOff.delayFbk); fxOff.delayFbk.connect(fxOff.delay);
             fxOff.delay.connect(mDest);
             
-            // VIBRATO
             fxOff.vibrato.delayTime.value = 0.03;
             fxOff.vibLfo.frequency.value = getKnobVal("VIBRATO", "RATE") * 20;
             fxOff.vibDepth.gain.value = getKnobVal("VIBRATO", "DEPTH") * 0.01;
             fxOff.vibLfo.connect(fxOff.vibDepth); fxOff.vibDepth.connect(fxOff.vibrato.delayTime);
             fxOff.vibLfo.start(0); fxOff.vibrato.connect(mDest);
 
-            // REVERB (Dichter Faltungshall)
             fxOff.reverbInput = offCtx.createGain();
             fxOff.reverbMix = offCtx.createGain();
             fxOff.reverbMix.gain.value = getKnobVal("REVERB", "MIX") * 1.5;
-
             fxOff.reverbFilter = offCtx.createBiquadFilter();
             fxOff.reverbFilter.type = 'lowpass';
             fxOff.reverbFilter.frequency.value = 2500;
@@ -796,7 +783,6 @@ function setupMainControls() {
             fxOff.reverbFilter.connect(fxOff.reverbMix);
             fxOff.reverbMix.connect(mDest);
 
-            // FILTER
             fxOff.filter.type = 'lowpass';
             const fVal = getKnobVal("FILTER", "FREQ");
             const rVal = getKnobVal("FILTER", "RES");
@@ -807,7 +793,6 @@ function setupMainControls() {
             fxOff.filter.connect(mDest);
             fxOff.filterInput = fxOff.filterDrive; 
 
-            // STUTTER
             fxOff.stutter.gain.value = 0;
             fxOff.stutterLfo.type = 'square';
             fxOff.stutterLfo.frequency.value = (getKnobVal("STUTTER", "RATE") * 15) + 1;
@@ -835,7 +820,6 @@ function setupMainControls() {
             console.error("Fehler beim Export:", err);
             alert("Es gab ein Problem beim Exportieren (siehe Konsole).");
         } finally {
-            // FIX: Button wird IMMER wieder freigegeben, auch bei einem Fehler
             exportWavBtn.innerText = "Export WAV";
             exportWavBtn.disabled = false;
         }
@@ -1039,7 +1023,8 @@ function setupTracePad() {
 
             traceCurrentSeg = { points: [{ x: currentX, y: traceCurrentY, rX, rY }], brush: brushSelect.value, thickness: parseInt(sizeSlider.value), chordType: chordSelect.value }; 
             tracks[currentTargetTrack].segments.push(traceCurrentSeg); 
-            if (brushSelect.value === "particles") triggerParticleGrain(tracks[currentTargetTrack], traceCurrentY); else startLiveSynth(tracks[currentTargetTrack], currentX, traceCurrentY); 
+            if (brushSelect.value === "particles") triggerParticleGrain(tracks[currentTargetTrack], traceCurrentY); 
+            else startLiveSynth(tracks[currentTargetTrack], currentX, traceCurrentY); 
         } else {
             traceCurrentSeg = null; 
         }
@@ -1122,8 +1107,6 @@ function setupFX() {
                     activeWaveShapers.forEach(sh => sh.curve = newCurve);
                 }
                 if (param === "CHAOS") {
-                    // NEU: Live Automation Override (Ninja Trick!)
-                    // Ruft alle laufenden Töne an und überschreibt ihre Pitch-Kurven
                     if (audioCtx) {
                         activeNodes.forEach(osc => {
                             if (osc.updateChaos) osc.updateChaos(val);
@@ -1193,7 +1176,6 @@ function loop() {
     let elapsed = audioCtx.currentTime - playbackStartTime;
     
     if (elapsed >= playbackDuration) {
-        
         let oldDuration = playbackDuration; 
 
         if (queuedPattern) { 
@@ -1204,9 +1186,7 @@ function loop() {
         }
         
         if (document.getElementById("loopCheckbox").checked) { 
-            
             playbackStartTime += oldDuration; 
-            
             activeWaveShapers = []; 
             scheduleTracks(playbackStartTime); 
             elapsed = audioCtx.currentTime - playbackStartTime; 
@@ -1288,31 +1268,24 @@ function loop() {
     const dataArray = new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(dataArray);
     let avg = dataArray.reduce((a, b) => a + b) / dataArray.length; let d = avg - lastAvg; lastAvg = avg;
     
-    // Basis-Bewegung (Squash & Stretch zum Beat)
     let scaleX = 1 + Math.min(0.2, d / 100);
     let scaleY = 1 - Math.min(0.5, d / 50);
     
-    // 1. PRÜFEN, OB GERADE EIN FRACTAL-SOUND ZU HÖREN IST
     let isFractalPlaying = false;
     
-    // Wird gerade live gezeichnet?
     if (liveGainNode && brushSelect.value === "fractal") {
         isFractalPlaying = true; 
     }
     
-    // Überquert der Playhead gerade einen gezeichneten Fractal-Strich?
     if (isPlaying) {
         const anySolo = tracks.some(t => t.solo);
         tracks.forEach(track => {
-            if (track.mute || (anySolo && !track.solo)) return; // Stumme Spuren ignorieren
+            if (track.mute || (anySolo && !track.solo)) return; 
             track.segments.forEach(seg => {
                 if (seg.brush === "fractal" && seg.points.length > 0) {
                     const sorted = seg.points.slice().sort((a, b) => a.x - b.x);
                     const startX = sorted[0].x;
                     const endX = sorted[sorted.length - 1].x;
-                    
-                    // Befindet sich der Playhead (x) genau auf diesem Strich?
-                    // (+10 Pixel Toleranz für den Audio-Release/Ausklang)
                     if (x >= startX && x <= endX + 10) {
                         isFractalPlaying = true;
                     }
@@ -1321,14 +1294,10 @@ function loop() {
         });
     }
     
-    // 2. DER RGB GLITCH EFFEKT (nur wenn isFractalPlaying = true ist)
     if (isFractalPlaying) {
-        // Taube zittert unkontrolliert
         const jitterX = (Math.random() - 0.5) * 15;
         const jitterY = (Math.random() - 0.5) * 15;
         pigeonImg.style.transform = `scale(${scaleX}, ${scaleY}) translate(${jitterX}px, ${jitterY}px)`;
-        
-        // RGB-Split (Rot und Cyan driften auseinander) + wilder Farbwechsel
         pigeonImg.style.filter = `
             drop-shadow(${jitterX * 1.5}px ${jitterY * 1.5}px 0 rgba(255, 0, 0, 0.8)) 
             drop-shadow(${-jitterX * 1.5}px ${-jitterY * 1.5}px 0 rgba(0, 255, 255, 0.8))
@@ -1336,7 +1305,6 @@ function loop() {
             contrast(150%)
         `;
     } else {
-        // Normaler Zustand ohne Fractal-Sound
         pigeonImg.style.transform = `scale(${scaleX}, ${scaleY}) translate(0px, 0px)`;
         pigeonImg.style.filter = 'none';
     }
@@ -1380,7 +1348,6 @@ function setupTrackControls(t) {
     if(snapBox) snapBox.addEventListener("change", e => t.snap = e.target.checked);
 }
 
-// --- CLIPPING LED LOGIK ---
 const peakDataArray = new Float32Array(256);
 const clippingLEDs = [
     document.getElementById('peak-t1'),
