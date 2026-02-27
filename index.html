@@ -477,122 +477,124 @@
     </div>
 
     <div id="help-de">
-      <h2>Sound Drawing Sequencer</h2>
+      <h2>Graphic Synthesis Sequencer</h2>
       <div class="help-grid-expanded">
         <div class="help-section">
-          <h3>1. Loslegen: Zeichne deinen Sound</h3>
+          <h3>1. Initialisierung & Zeichnung</h3>
           <ul>
-            <li><strong>Pattern wählen:</strong> Klicke unten rechts in der <em>Pattern Bank</em> auf ein leeres Pad (z.B. unter 'A'), um dort deinen ersten Loop zu starten.</li>
-            <li><strong>Zeichnen:</strong> Klicke und ziehe mit der Maus auf den weißen Leinwänden (Canvas), um Töne einzuzeichnen. Oben = hohe Töne, Unten = tiefe Töne.</li>
-            <li><strong>Tools:</strong> Wähle links zwischen <em>Draw</em> (Zeichnen) und <em>Erase</em> (Radieren).</li>
+            <li><strong>Pattern-Zuweisung:</strong> Wähle in der <em>Pattern Bank</em> (unten rechts) eine leere Zelle, um eine neue Sequenz zu initiieren.</li>
+            <li><strong>Grafische Eingabe:</strong> Die X-Achse repräsentiert die Zeit ($t$), die Y-Achse die fundamentale Frequenz ($f_0$). Zeichne Vektoren in das Canvas.</li>
+            <li><strong>Werkzeuge:</strong> Wähle zwischen <em>Draw</em> (Vektor-Eingabe) und <em>Erase</em> (Vektor-Tilgung).</li>
           </ul>
         </div>
         <div class="help-section">
-          <h3>2. Die 4 Tonspuren (Tracks)</h3>
+          <h3>2. Spur-Architektur (Tracks)</h3>
           <ul>
-            <li><strong>Wellenformen:</strong> Wähle den Grundklang pro Spur. <strong>∿</strong> (Weicher Bass/Lead), <strong>⊓</strong> (Hohler 8-Bit Sound), <strong>∧</strong> (Scharfer Synth).</li>
-            <li><strong>Snap:</strong> Aktivierst du 'Snap', werden deine Zeichnungen auf ein strenges rhythmisches Raster gezwungen (Quantisierung).</li>
-            <li><strong>Solo / Mute:</strong> Schalte einzelne Spuren stumm oder höre sie isoliert.</li>
-            <li><strong>Volume:</strong> Regle die Lautstärke jeder Spur über den Slider ab.</li>
+            <li><strong>Wellenformen:</strong> Definiert das harmonische Spektrum. <strong>∿</strong> (Sinus/Grundton), <strong>⊓</strong> (Rechteck/ungerade Obertöne), <strong>∧</strong> (Sägezahn/alle Obertöne).</li>
+            <li><strong>Snap (Quantisierung):</strong> Erzwingt eine harte Rasterung der X-Koordinaten zur absoluten Taktsynchronität.</li>
+            <li><strong>Routing:</strong> Nutze <em>Solo/Mute</em> für isolierte Audiosignal-Kontrolle und die Slider für die Amplituden-Skalierung.</li>
           </ul>
         </div>
         <div class="help-section">
-          <h3>3. Live spielen & Effekte</h3>
+          <h3>3. Performative Interaktion</h3>
           <ul>
-            <li><strong>Poke Me Pad:</strong> Wähle im <em>Target</em>-Feld eine Spur aus. Klicke auf das Pad, um live Töne abzufeuern (X = Zeit, Y = Tonhöhe).</li>
-            <li><strong>Effekte (FX):</strong> Das Rack bietet 6 Effekte. Klicke im Grid auf die Farbe einer Spur, um diese durch den jeweiligen Effekt zu schleifen.</li>
-            <li><strong>X/Y Link:</strong> Ist dies aktiv, steuert das <em>Poke Me Pad</em> keine Töne mehr, sondern bedient die beiden Effekt-Regler live (X = Links, Y = Rechts).</li>
+            <li><strong>Poke Me Pad:</strong> Ein taktiles Echtzeit-Interface. Triggert sofortige Frequenz-Zuweisungen auf der selektierten Spur.</li>
+            <li><strong>Effekt-Matrix:</strong> Klicke auf die Farbindikatoren, um das Audiosignal der jeweiligen Spur in dedizierte DSP-Module (Verzögerung, Hall, Filter etc.) zu routen.</li>
+            <li><strong>X/Y Link:</strong> Wandelt das Pad in einen Makro-Controller um, der algorithmisch Parameter der Effekt-Engine interpoliert.</li>
           </ul>
         </div>
         <div class="help-section">
-          <h3>4. Rhythmus & Sync</h3>
+          <h3>4. Taktung & Makro-Struktur</h3>
           <ul>
-            <li><strong>Play/Stop:</strong> Starte den Loop (Shortcut: <em>Leertaste</em>).</li>
-            <li><strong>Harmonize:</strong> Zwingt alle eingezeichneten Frequenzen auf eine feste musikalische Tonleiter (z.B. Minor/Moll).</li>
-            <li><strong>EXT SYNC (DAW Setup):</strong> Erstelle ein virtuelles MIDI-Kabel (Mac: <em>IAC-Treiber</em>, Win: <em>loopMIDI</em>). Aktiviere in deiner DAW den Sync-Out. Wähle den Port im Dropdown und aktiviere EXT SYNC.</li>
+            <li><strong>Transport:</strong> Start/Stopp der globalen Playback-Schleife (Shortcut: <em>Leertaste</em>).</li>
+            <li><strong>Harmonize (Tonleiter-Rastung):</strong> Zwingt alle Y-Koordinaten durch mathematische Rundung auf vordefinierte musikalische Skalen.</li>
+            <li><strong>EXT SYNC:</strong> Synchronisiert den internen Timer via Web-MIDI-API mit externen Clocks (DAWs/Hardware). Erfordert virtuelle MIDI-Treiber.</li>
           </ul>
         </div>
         
         <div class="help-section" style="grid-column: 1 / -1;">
-          <h3>5. Die Pinsel (Brushes)</h3>
+          <h3>5. Geometrische Synthese-Werkzeuge (Brushes)</h3>
           <ul style="column-count: 2; column-gap: 40px;">
-            <li><strong>Standard / Pressure / Calligraphy:</strong> Klassische Pinsel für sanfte Melodien und gleitende Tonübergänge (Portamento).</li>
-            <li><strong>Particles:</strong> Zeichnet eine Punktewolke. Erzeugt ganz kurze, körnige und prasselnde Töne (Granular-Effekt).</li>
-            <li><strong>Chord:</strong> Malt drei parallele Linien. Unter dem Pinsel-Menü erscheint ein Dropdown, mit dem du den Akkord (Major, Minor, etc.) bestimmen kannst.</li>
-            <li><strong>Xenakis Swarm:</strong> Zeichnet fünf schwingende Linien. Die Tonhöhen kreisen umeinander und formen einen dichten, leicht verstimmten "Schwarm-Effekt".</li>
-            <li style="break-inside: avoid;"><strong>Fractal:</strong> Ein chaotischer Synthesizer-Pinsel. <br><em>Bedienung:</em> Nutze das "FRACTAL" Modul rechts bei den Effekten. <br>→ <strong>CHAOS:</strong> Lässt die Töne zufällig zittern.<br>→ <strong>MORPH:</strong> Verzerrt die Schallwelle aggressiv (Wavefolding) und gibt der gezeichneten Linie eine rot leuchtende Kontur (Clipping).</li>
+            <li><strong>Standard:</strong> Kontinuierlicher Phasen-Oszillator. Übersetzt die Vektoren in absolut stufenlose Frequenzverläufe (perfektes Portamento).</li>
+            <li><strong>Pressure:</strong> Geschwindigkeitsabhängige Linienführung. Simuliert haptischen Druck durch Analyse der Maus-Vektorenlänge.</li>
+            <li><strong>Calligraphy:</strong> Winkel-determinierte Geometrie. Erzeugt statische Amplitudenbänder, inspiriert durch historische grafische Notation.</li>
+            <li><strong>Particles:</strong> Stochastische Mikromontage (Granularsynthese). Zerlegt die Kurve in asynchrone, granulare Millisekunden-Grains – erzeugt texturierte, prasselnde Klangwolken.</li>
+            <li><strong>Chord:</strong> Harmonische Frequenz-Vervielfachung. Generiert parallele Oszillatoren, die an strikte musikalische Ratios (Intervalle) gekoppelt sind. Konfigurierbar im Sub-Menü.</li>
+            <li><strong>Xenakis Swarm:</strong> Unkorrelierte Frequenzmodulation. Zeichnet fünf Linien, deren Tonhöhen durch gegenläufige LFO-Algorithmen gegeneinander verstimmt werden, was dichte, schwebende Cluster erzeugt.</li>
+            <li style="break-inside: avoid;"><strong>Fractal:</strong> Destabilisierter Synthesizer.<br><em>DSP-Steuerung via "FRACTAL" Rack:</em><br>→ <strong>CHAOS:</strong> Injiziert Rausch-Jitter in die Y-Matrix, was die Grundfrequenz stochastisch zerrüttet.<br>→ <strong>MORPH:</strong> Aktiviert eine nicht-lineare Transferfunktion (WaveShaper). Erzeugt extreme harmonische Verzerrung (Wavefolding) und visualisiert das Signal-Clipping rot.</li>
           </ul>
         </div>
 
         <div class="help-section" style="grid-column: 1 / -1; border-top: 1px solid var(--color-border-btn); padding-top: 15px;">
-          <h3>6. Speichern, Export & Aktionen</h3>
+          <h3>6. Datensicherung & Rendering</h3>
           <ul style="column-count: 2; column-gap: 40px;">
-            <li><strong>Pattern speichern:</strong> Klicke auf <strong>SAVE</strong> (pulsiert rot) und danach auf ein leeres Pad in der Bank, um den aktuellen Loop zu sichern.</li>
-            <li><strong>Live Arrangement:</strong> Klicke während dem Playback auf gespeicherte Pads, um musikalisch zwischen ihnen zu wechseln.</li>
-            <li><strong>Export WAV:</strong> Rendert deinen Loop offline als saubere Audiodatei.</li>
-            <li><strong>Live REC:</strong> Nimmt eine Performance auf dem Pad live auf und lädt sie direkt als WAV herunter.</li>
-            <li><strong>Set Import/Export:</strong> Speichert dein gesamtes Projekt als Datei ab.</li>
+            <li><strong>SAVE:</strong> Speichert den Zustand aller Vektor-Matrizen auf ein Pad der Bank.</li>
+            <li><strong>Live Arrangement:</strong> Sequenzielles Umschalten zwischen Pattern-Speichern in Echtzeit ohne Phasen-Unterbrechung.</li>
+            <li><strong>Export WAV:</strong> Berechnet die Audio-Buffer iterativ (Offline-Rendering) und liefert verlustfreies PCM-Audio.</li>
+            <li><strong>Live REC:</strong> Rekordiert den Master-Bus und exportiert improvisierte Performances.</li>
+            <li><strong>Import/Export:</strong> Serialisiert die komplette Session (JSON) für späteren Recall.</li>
           </ul>
         </div>
       </div>
     </div>
 
     <div id="help-en" style="display: none;">
-      <h2>Sound Drawing Sequencer</h2>
+      <h2>Graphic Synthesis Sequencer</h2>
       <div class="help-grid-expanded">
         <div class="help-section">
-          <h3>1. Get Started: Draw your Sound</h3>
+          <h3>1. Initialization & Drawing</h3>
           <ul>
-            <li><strong>Select Pattern:</strong> Click an empty pad in the <em>Pattern Bank</em> (bottom right, e.g., row 'A') to start your first loop.</li>
-            <li><strong>Draw:</strong> Click and drag on the white canvas to draw notes. Top = high pitch, Bottom = low pitch.</li>
-            <li><strong>Tools:</strong> Choose between <em>Draw</em> and <em>Erase</em> on the left.</li>
+            <li><strong>Assign Pattern:</strong> Select an empty cell in the <em>Pattern Bank</em> (bottom right) to initialize a new loop sequence.</li>
+            <li><strong>Vector Input:</strong> The X-axis represents time ($t$), the Y-axis the fundamental frequency ($f_0$). Draw vectors into the canvas.</li>
+            <li><strong>Tools:</strong> Toggle between <em>Draw</em> (vector insertion) and <em>Erase</em> (vector deletion).</li>
           </ul>
         </div>
         <div class="help-section">
-          <h3>2. The 4 Tracks</h3>
+          <h3>2. Track Architecture</h3>
           <ul>
-            <li><strong>Waveforms:</strong> Choose the core sound. <strong>∿</strong> (Smooth Bass/Lead), <strong>⊓</strong> (Hollow 8-Bit), <strong>∧</strong> (Sharp Synth).</li>
-            <li><strong>Snap:</strong> Forces your drawn lines onto a strict rhythmic grid (Quantization).</li>
-            <li><strong>Solo / Mute:</strong> Silence tracks or listen to them in isolation.</li>
-            <li><strong>Volume:</strong> Adjust the level of each track separately.</li>
+            <li><strong>Waveforms:</strong> Defines the harmonic spectrum. <strong>∿</strong> (Sine/Fundamental), <strong>⊓</strong> (Square/Odd Harmonics), <strong>∧</strong> (Sawtooth/All Harmonics).</li>
+            <li><strong>Snap (Quantization):</strong> Forces absolute temporal synchronization by locking coordinates to a grid.</li>
+            <li><strong>Routing:</strong> Use <em>Solo/Mute</em> for isolated audio monitoring and sliders for amplitude scaling.</li>
           </ul>
         </div>
         <div class="help-section">
-          <h3>3. Live Performance & FX</h3>
+          <h3>3. Performative Interaction</h3>
           <ul>
-            <li><strong>Poke Me Pad:</strong> Select a <em>Target</em> track. Click the pad to trigger sounds live (X = Time, Y = Pitch).</li>
-            <li><strong>Effects (FX):</strong> Click the colored squares in an FX module to route a track into it.</li>
-            <li><strong>X/Y Link:</strong> Hijacks the Poke Me pad to control the two FX knobs like a live mixer instead of playing notes.</li>
+            <li><strong>Poke Me Pad:</strong> A tactile real-time interface. Triggers instantaneous frequency allocations on the targeted track.</li>
+            <li><strong>FX Matrix:</strong> Click the track-color indicators to route the audio signal into dedicated DSP modules (Delay, Reverb, etc.).</li>
+            <li><strong>X/Y Link:</strong> Hijacks the tactile pad to act as a macro-controller, algorithmically interpolating FX parameters.</li>
           </ul>
         </div>
         <div class="help-section">
-          <h3>4. Rhythm & Sync</h3>
+          <h3>4. Clock & Macro Structure</h3>
           <ul>
-            <li><strong>Play/Stop:</strong> Start the loop (Shortcut: <em>Spacebar</em>).</li>
-            <li><strong>Harmonize:</strong> Forces all your drawings into a clean musical scale (e.g., Minor).</li>
-            <li><strong>EXT SYNC (DAW Setup):</strong> Use a virtual MIDI cable (Mac: <em>IAC Driver</em>, Win: <em>loopMIDI</em>). Enable Sync output for it in your DAW. Select the port here and hit EXT SYNC.</li>
+            <li><strong>Transport:</strong> Initiates or halts the global playback loop (Shortcut: <em>Spacebar</em>).</li>
+            <li><strong>Harmonize:</strong> Algorithmic pitch-correction. Constrains all Y-coordinates to predefined musical scales.</li>
+            <li><strong>EXT SYNC:</strong> Uses the Web MIDI API to slave the internal timer to external hardware or DAWs. Requires virtual MIDI ports.</li>
           </ul>
         </div>
         
         <div class="help-section" style="grid-column: 1 / -1;">
-          <h3>5. The Brushes</h3>
+          <h3>5. Geometric Synthesis Brushes</h3>
           <ul style="column-count: 2; column-gap: 40px;">
-            <li><strong>Standard / Pressure / Calligraphy:</strong> Classic brushes for smooth melodies and glissandos.</li>
-            <li><strong>Particles:</strong> Draws a cloud of dots. Creates short, grainy, and scattering sounds (Granular Synthesis).</li>
-            <li><strong>Chord:</strong> Draws 3 parallel lines to form a chord. A secondary dropdown appears to let you pick the chord type (Major, Minor, etc.).</li>
-            <li><strong>Xenakis Swarm:</strong> Draws 5 oscillating lines. The frequencies orbit each other, creating a thick, slightly detuned "swarm" effect.</li>
-            <li style="break-inside: avoid;"><strong>Fractal:</strong> A chaotic synthesizer brush. <br><em>How to use:</em> Use the "FRACTAL" FX module. <br>→ <strong>CHAOS:</strong> Randomizes the pitch for a nervous sound.<br>→ <strong>MORPH:</strong> Applies distortion (WaveShaper) and adds a red clipping aura to your line.</li>
+            <li><strong>Standard:</strong> Continuous phase oscillator. Translates vectors into flawless frequency sweeps (Portamento).</li>
+            <li><strong>Pressure:</strong> Velocity-dependent strokes. Simulates pressure by analyzing the vector distance of your mouse movements.</li>
+            <li><strong>Calligraphy:</strong> Angle-determined geometry. Creates static amplitude bands inspired by historical graphic notation.</li>
+            <li><strong>Particles:</strong> Stochastic micro-montage (Granular Synthesis). Disintegrates the curve into asynchronous, millisecond-long grains, creating textured sound clouds.</li>
+            <li><strong>Chord:</strong> Harmonic frequency multiplication. Generates parallel oscillators locked to strict musical ratios. Defined via the sub-menu.</li>
+            <li><strong>Xenakis Swarm:</strong> Uncorrelated frequency modulation. Draws five parallel lines whose pitches are dynamically detuned by intersecting low-frequency oscillators (LFOs).</li>
+            <li style="break-inside: avoid;"><strong>Fractal:</strong> Destabilized synthesizer.<br><em>DSP-Control via "FRACTAL" Rack:</em><br>→ <strong>CHAOS:</strong> Injects noise-jitter into the Y-matrix, causing microtonal frequency scrambling.<br>→ <strong>MORPH:</strong> Activates a non-linear transfer function (WaveShaper). Induces extreme harmonic distortion (Wavefolding) and highlights the line's clipping in red.</li>
           </ul>
         </div>
 
         <div class="help-section" style="grid-column: 1 / -1; border-top: 1px solid var(--color-border-btn); padding-top: 15px;">
-          <h3>6. Save, Export & Actions</h3>
+          <h3>6. Serialization & Rendering</h3>
           <ul style="column-count: 2; column-gap: 40px;">
-            <li><strong>Save Pattern:</strong> Click <strong>SAVE</strong> (pulses red), then click an empty pad to store your current loop.</li>
-            <li><strong>Live Arrangement:</strong> Click saved pads during playback to queue and switch patterns seamlessly.</li>
-            <li><strong>Export WAV:</strong> Renders your perfect loop offline as an audio file.</li>
-            <li><strong>Live REC:</strong> Records your performance on the pad and downloads it as a WAV file.</li>
-            <li><strong>Import/Export Set:</strong> Saves your entire session to disk.</li>
+            <li><strong>SAVE:</strong> Commits the current state of all vector matrices to a pad in the memory bank.</li>
+            <li><strong>Live Arrangement:</strong> Sequentially switch between stored memory banks in real-time without phase interruptions.</li>
+            <li><strong>Export WAV:</strong> Iteratively renders the audio buffer offline, providing a mathematically flawless PCM audio file.</li>
+            <li><strong>Live REC:</strong> Records the master bus output directly to a downloadable file.</li>
+            <li><strong>Import/Export:</strong> Serializes the entire session (JSON) for later recall.</li>
           </ul>
         </div>
       </div>
