@@ -24,7 +24,7 @@
   <header class="header">
     <div class="header__left">
       <h1 class="header__title" id="pigeonTitle">
-        <span class="title-line">Sound Drawing</span>
+        <span class="title-line">Graphic Synthesis</span>
         <span class="title-line">Sequencer</span>
       </h1>
     </div>
@@ -499,7 +499,7 @@
           <h3>3. Performative Interaktion</h3>
           <ul>
             <li><strong>Poke Me Pad:</strong> Ein taktiles Echtzeit-Interface. Triggert sofortige Frequenz-Zuweisungen auf der selektierten Spur.</li>
-            <li><strong>Effekt-Matrix:</strong> Klicke auf die Farbindikatoren, um das Audiosignal der jeweiligen Spur in dedizierte DSP-Module (Verzögerung, Hall, Filter etc.) zu routen.</li>
+            <li><strong>Effekt-Matrix:</strong> Klicke auf die Farbindikatoren, um das Signal in dedizierte DSP-Module (Verzögerung, Hall, Filter etc.) zu routen.</li>
             <li><strong>X/Y Link:</strong> Wandelt das Pad in einen Makro-Controller um, der algorithmisch Parameter der Effekt-Engine interpoliert.</li>
           </ul>
         </div>
@@ -507,20 +507,31 @@
           <h3>4. Taktung & Makro-Struktur</h3>
           <ul>
             <li><strong>Transport:</strong> Start/Stopp der globalen Playback-Schleife (Shortcut: <em>Leertaste</em>).</li>
-            <li><strong>Harmonize (Tonleiter-Rastung):</strong> Zwingt alle Y-Koordinaten durch mathematische Rundung auf vordefinierte musikalische Skalen.</li>
-            <li><strong>EXT SYNC:</strong> Synchronisiert den internen Timer via Web-MIDI-API mit externen Clocks (DAWs/Hardware). Erfordert virtuelle MIDI-Treiber.</li>
+            <li><strong>Harmonize:</strong> Zwingt alle Y-Koordinaten durch mathematische Rundung auf vordefinierte musikalische Skalen.</li>
+            <li><strong>EXT SYNC (Ableton Live / DAW Setup):</strong> Synchronisiert den Sequenzer mit deiner DAW.
+              <ol style="margin-top: 8px; padding-left: 20px; font-size: 0.9em;">
+                <li>Erstelle einen virtuellen MIDI-Port (Mac: <em>IAC-Treiber</em>, Win: <em>loopMIDI</em>).</li>
+                <li>Gehe in Ableton zu <em>Preferences -> Link/Tempo/MIDI</em>.</li>
+                <li>Aktiviere <strong>Sync</strong> beim <em>Output</em> deines virtuellen MIDI-Ports.</li>
+                <li>Wähle diesen Port in The Pigeon im Dropdown und klicke <strong>EXT SYNC</strong>.</li>
+                <li>Drücke Play in Ableton – The Pigeon startet synchron und folgt dem DAW-Tempo!</li>
+              </ol>
+            </li>
           </ul>
         </div>
         
         <div class="help-section" style="grid-column: 1 / -1;">
           <h3>5. Geometrische Synthese-Werkzeuge (Brushes)</h3>
-          <ul style="column-count: 2; column-gap: 40px;">
+          <ul style="column-count: 2; column-gap: 40px; font-size: 0.9em;">
             <li><strong>Standard:</strong> Kontinuierlicher Phasen-Oszillator. Übersetzt die Vektoren in absolut stufenlose Frequenzverläufe (perfektes Portamento).</li>
             <li><strong>Pressure:</strong> Geschwindigkeitsabhängige Linienführung. Simuliert haptischen Druck durch Analyse der Maus-Vektorenlänge.</li>
             <li><strong>Calligraphy:</strong> Winkel-determinierte Geometrie. Erzeugt statische Amplitudenbänder, inspiriert durch historische grafische Notation.</li>
             <li><strong>Particles:</strong> Stochastische Mikromontage (Granularsynthese). Zerlegt die Kurve in asynchrone, granulare Millisekunden-Grains – erzeugt texturierte, prasselnde Klangwolken.</li>
             <li><strong>Chord:</strong> Harmonische Frequenz-Vervielfachung. Generiert parallele Oszillatoren, die an strikte musikalische Ratios (Intervalle) gekoppelt sind. Konfigurierbar im Sub-Menü.</li>
-            <li><strong>Xenakis Swarm:</strong> Unkorrelierte Frequenzmodulation. Zeichnet fünf Linien, deren Tonhöhen durch gegenläufige LFO-Algorithmen gegeneinander verstimmt werden, was dichte, schwebende Cluster erzeugt.</li>
+            <li><strong>Xenakids (Swarm):</strong> Unkorrelierte Phasenmodulation. Zeichnet fünf Linien, deren Tonhöhen durch LFO-Algorithmen gegeneinander verstimmt werden, was schwebende Dissonanz-Cluster erzeugt.</li>
+            <li><strong>Rorbach (Rorschach):</strong> Achsensymmetrischer Kontrapunkt. Reflektiert den gezeichneten Vektor an der horizontalen Mittelachse und berechnet die strikt invertierten Frequenzen für algorithmische Zweistimmigkeit.</li>
+            <li><strong>Overtone:</strong> Additive Spektralsynthese. Erweitert den Grundton um logarithmisch angeordnete, phasenstarre Partialtöne ($2f, 3f, 4f...$) zur Erzeugung glocken- oder orgelartiger Klangspektren.</li>
+            <li><strong>DX7 (FM):</strong> Frequenzmodulation nach John Chowning. Zeichnet eine sichtbare Trägerwelle (Carrier), moduliert durch eine zweite Welle. Die gezeichnete Pinsel-Dicke steuert den Modulationsindex.</li>
             <li style="break-inside: avoid;"><strong>Fractal:</strong> Destabilisierter Synthesizer.<br><em>DSP-Steuerung via "FRACTAL" Rack:</em><br>→ <strong>CHAOS:</strong> Injiziert Rausch-Jitter in die Y-Matrix, was die Grundfrequenz stochastisch zerrüttet.<br>→ <strong>MORPH:</strong> Aktiviert eine nicht-lineare Transferfunktion (WaveShaper). Erzeugt extreme harmonische Verzerrung (Wavefolding) und visualisiert das Signal-Clipping rot.</li>
           </ul>
         </div>
@@ -570,19 +581,30 @@
           <ul>
             <li><strong>Transport:</strong> Initiates or halts the global playback loop (Shortcut: <em>Spacebar</em>).</li>
             <li><strong>Harmonize:</strong> Algorithmic pitch-correction. Constrains all Y-coordinates to predefined musical scales.</li>
-            <li><strong>EXT SYNC:</strong> Uses the Web MIDI API to slave the internal timer to external hardware or DAWs. Requires virtual MIDI ports.</li>
+            <li><strong>EXT SYNC (Ableton Live / DAW Setup):</strong> Slaves the sequencer to your DAW.
+              <ol style="margin-top: 8px; padding-left: 20px; font-size: 0.9em;">
+                <li>Create a virtual MIDI port (Mac: <em>IAC Driver</em>, Win: <em>loopMIDI</em>).</li>
+                <li>In Ableton, go to <em>Preferences -> Link/Tempo/MIDI</em>.</li>
+                <li>Enable the <strong>Sync</strong> switch for the <em>Output</em> of your virtual MIDI port.</li>
+                <li>Select this port in The Pigeon's dropdown and click <strong>EXT SYNC</strong>.</li>
+                <li>Press Play in Ableton – The Pigeon starts automatically and follows your DAW's tempo!</li>
+              </ol>
+            </li>
           </ul>
         </div>
         
         <div class="help-section" style="grid-column: 1 / -1;">
           <h3>5. Geometric Synthesis Brushes</h3>
-          <ul style="column-count: 2; column-gap: 40px;">
+          <ul style="column-count: 2; column-gap: 40px; font-size: 0.9em;">
             <li><strong>Standard:</strong> Continuous phase oscillator. Translates vectors into flawless frequency sweeps (Portamento).</li>
             <li><strong>Pressure:</strong> Velocity-dependent strokes. Simulates pressure by analyzing the vector distance of your mouse movements.</li>
             <li><strong>Calligraphy:</strong> Angle-determined geometry. Creates static amplitude bands inspired by historical graphic notation.</li>
             <li><strong>Particles:</strong> Stochastic micro-montage (Granular Synthesis). Disintegrates the curve into asynchronous, millisecond-long grains, creating textured sound clouds.</li>
             <li><strong>Chord:</strong> Harmonic frequency multiplication. Generates parallel oscillators locked to strict musical ratios. Defined via the sub-menu.</li>
-            <li><strong>Xenakis Swarm:</strong> Uncorrelated frequency modulation. Draws five parallel lines whose pitches are dynamically detuned by intersecting low-frequency oscillators (LFOs).</li>
+            <li><strong>Xenakids (Swarm):</strong> Uncorrelated phase modulation. Draws five parallel lines whose pitches are dynamically detuned by LFOs, generating beating dissonant clusters.</li>
+            <li><strong>Rorbach (Rorschach):</strong> Axis-symmetric counterpoint. Reflects the drawn vector across the horizontal center axis, computing strictly inverted frequencies for algorithmic two-voice polyphony.</li>
+            <li><strong>Overtone:</strong> Additive Spectral Synthesis. Expands the fundamental frequency with logarithmically stacked, phase-locked partials ($2f, 3f, 4f...$) for bell-like or organ spectra.</li>
+            <li><strong>DX7 (FM):</strong> Frequency Modulation (John Chowning method). Draws a visible carrier wave modulated by a secondary wave. The drawn brush thickness controls the modulation index.</li>
             <li style="break-inside: avoid;"><strong>Fractal:</strong> Destabilized synthesizer.<br><em>DSP-Control via "FRACTAL" Rack:</em><br>→ <strong>CHAOS:</strong> Injects noise-jitter into the Y-matrix, causing microtonal frequency scrambling.<br>→ <strong>MORPH:</strong> Activates a non-linear transfer function (WaveShaper). Induces extreme harmonic distortion (Wavefolding) and highlights the line's clipping in red.</li>
           </ul>
         </div>
