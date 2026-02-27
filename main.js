@@ -327,14 +327,13 @@ function loadPatternData(d) {
     }
 }
 
-function startLiveSynth(track, y) {
+function startLiveSynth(track, x, y) {
     const anySolo = tracks.some(t => t.solo);
     const isAudible = anySolo ? track.solo : !track.mute;
     if (!isAudible || track.vol < 0.01) return;
     
     liveNodes = []; liveGainNode = audioCtx.createGain(); liveGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     
-    // NEU: Lautstärke drosseln für Xenakis, sonst übersteuert es!
     const brush = brushSelect.value;
     const maxVol = brush === "xenakis" ? 0.15 : 0.3;
     liveGainNode.gain.linearRampToValueAtTime(maxVol, audioCtx.currentTime + 0.01);
@@ -349,13 +348,24 @@ function startLiveSynth(track, y) {
     let freq = mapYToFrequency(currentY, 100); 
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
-    // NEU: Xenakis Stimmen (Detune)
-    const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]);
+    // NEU: Platzhalter-Array für Xenakis, damit wir 5 Oszillatoren mit Index (i) erzeugen
+    const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [0, 1, 2, 3, 4] : [0]);
 
-    ivs.forEach(iv => {
+    ivs.forEach((iv, i) => {
         const osc = audioCtx.createOscillator(); 
         osc.type = track.wave;
-        osc.frequency.setValueAtTime(freq * Math.pow(2, iv / 12), audioCtx.currentTime);
+
+        // ECHTES SCANNING
+        let finalDetune = 0;
+        if (brush === "xenakis") {
+            const offset = i - 2; 
+            const waveMod = Math.sin(x * 0.04 + offset * 1.5);
+            finalDetune = (offset * 0.05) + (waveMod * 0.15); // Basis-Verstimmung + Welle
+        } else if (brush === "chord") {
+            finalDetune = iv;
+        }
+
+        osc.frequency.setValueAtTime(freq * Math.pow(2, finalDetune / 12), audioCtx.currentTime);
         osc.connect(liveGainNode); 
         osc.start(); liveNodes.push(osc);
     });
@@ -367,7 +377,7 @@ function startLiveSynth(track, y) {
     liveGainNode.out = trackG;
 }
 
-function updateLiveSynth(track, y) {
+function updateLiveSynth(track, x, y) {
     if (!liveGainNode) return;
     
     let currentY = y;
@@ -382,9 +392,17 @@ function updateLiveSynth(track, y) {
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
     liveNodes.forEach((n, i) => { 
-        // NEU: Xenakis im Update
-        const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]); 
-        n.frequency.setTargetAtTime(freq * Math.pow(2, (ivs[i] || 0) / 12), audioCtx.currentTime, 0.02); 
+        // ECHTES SCANNING IM UPDATE
+        let finalDetune = 0;
+        if (brush === "xenakis") {
+            const offset = i - 2; 
+            const waveMod = Math.sin(x * 0.04 + offset * 1.5);
+            finalDetune = (offset * 0.05) + (waveMod * 0.15);
+        } else if (brush === "chord") {
+            const ivs = chordIntervals[chordSelect.value] || [0];
+            finalDetune = ivs[i] || 0;
+        }
+        n.frequency.setTargetAtTime(freq * Math.pow(2, finalDetune / 12), audioCtx.currentTime, 0.02); 
     });
 }
 
@@ -476,10 +494,10 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             } else {
-                // NEU: Xenakis in der Zeitleiste
-                const ivs = (brush === "chord") ? chordIntervals[seg.chordType || "major"] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]);
+                // NEU: Xenakis in der Zeitleiste mit ECHTEM SCANNING
+                const ivs = (brush === "chord") ? chordIntervals[seg.chordType || "major"] : (brush === "xenakis" ? [0, 1, 2, 3, 4] : [0]);
                 
-                ivs.forEach(iv => {
+                ivs.forEach((iv, i) => {
                     const osc = targetCtx.createOscillator(), g = targetCtx.createGain(); osc.type = track.wave;
                     
                     let tfPairs = [];
@@ -492,7 +510,8 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         const t = Math.max(0, start + (cX / 750) * playbackDuration); 
                         let f = mapYToFrequency(cY, 100); 
                         if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
-                        tfPairs.push({ t, f });
+                        // WICHTIG: cX mitspeichern, damit wir es gleich in die Sinus-Formel werfen können!
+                        tfPairs.push({ t, f, cX }); 
                     });
                     
                     tfPairs.sort((a, b) => a.t - b.t);
@@ -501,7 +520,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     const sT = tfPairs[0].t;
                     const eT = tfPairs[tfPairs.length - 1].t;
 
-                    // NEU: Lautstärke drosseln für Xenakis
                     const maxVol = brush === "xenakis" ? 0.15 : 0.3;
                     g.gain.setValueAtTime(0, sT); 
                     g.gain.linearRampToValueAtTime(maxVol, sT + 0.02); 
@@ -512,8 +530,18 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     g.connect(trkG); 
                     
                     tfPairs.forEach(pair => {
-                        try { osc.frequency.linearRampToValueAtTime(pair.f * Math.pow(2, iv/12), pair.t); } 
-                        catch(e) { osc.frequency.setTargetAtTime(pair.f * Math.pow(2, iv/12), pair.t, 0.01); }
+                        let finalDetune = 0;
+                        if (brush === "xenakis") {
+                            const offset = i - 2;
+                            const waveMod = Math.sin(pair.cX * 0.04 + offset * 1.5);
+                            finalDetune = (offset * 0.05) + (waveMod * 0.15); // Exakt wie im Live-Modus
+                        } else if (brush === "chord") {
+                            finalDetune = iv;
+                        }
+
+                        const playFreq = pair.f * Math.pow(2, finalDetune / 12);
+                        try { osc.frequency.linearRampToValueAtTime(playFreq, pair.t); } 
+                        catch(e) { osc.frequency.setTargetAtTime(playFreq, pair.t, 0.01); }
                     });
                     
                     osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
@@ -521,9 +549,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             }
-        });
-    });
-}
 
 function setupDrawing(track) {
     let drawing = false;
@@ -550,7 +575,7 @@ function setupDrawing(track) {
                 triggerParticleGrain(track, pos.y);
                 lastParticleTime = performance.now();
             } else {
-                startLiveSynth(track, pos.y);
+                startLiveSynth(track, x, pos.y);
             }
         } else {
             erase(track, pos.x, pos.y); 
@@ -580,7 +605,7 @@ function setupDrawing(track) {
                         lastParticleTime = now;
                     }
                 } else {
-                    updateLiveSynth(track, pos.y);
+                    updateLiveSynth(track, x, pos.y);
                 }
             }
         } else if (toolSelect.value === "erase" && (e.buttons === 1 || e.type === "touchmove")) {
@@ -1014,7 +1039,7 @@ function setupTracePad() {
 
             traceCurrentSeg = { points: [{ x: currentX, y: traceCurrentY, rX, rY }], brush: brushSelect.value, thickness: parseInt(sizeSlider.value), chordType: chordSelect.value }; 
             tracks[currentTargetTrack].segments.push(traceCurrentSeg); 
-            if (brushSelect.value === "particles") triggerParticleGrain(tracks[currentTargetTrack], traceCurrentY); else startLiveSynth(tracks[currentTargetTrack], traceCurrentY); 
+            if (brushSelect.value === "particles") triggerParticleGrain(tracks[currentTargetTrack], traceCurrentY); else startLiveSynth(tracks[currentTargetTrack], currentX, traceCurrentY); 
         } else {
             traceCurrentSeg = null; 
         }
@@ -1027,7 +1052,7 @@ function setupTracePad() {
             traceCurrentY = pos.y; 
             if (!isEffectMode) { 
                 if (brushSelect.value !== "particles") {
-                    updateLiveSynth(tracks[currentTargetTrack], traceCurrentY); 
+                    updateLiveSynth(tracks[currentTargetTrack], pos.x, traceCurrentY); 
                 }
             } 
         } 
