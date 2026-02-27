@@ -166,7 +166,6 @@ function updateFractalFxUI() {
         }
     });
 
-    // NEU: Verstecke das Chord-Dropdown, wenn Chord nicht ausgewählt ist
     const chordRow = document.getElementById("chordSelectRow");
     if (chordRow) {
         chordRow.style.display = (brushSelect.value === "chord") ? "block" : "none";
@@ -230,21 +229,15 @@ function loadInitialData() {
     fetch('default_set.json')
         .then(res => res.json())
         .then(data => {
-            if (data.banks) { 
-                patternBanks = data.banks; 
-                updatePadUI(patternBanks); 
-            }
-            if (data.current) {
-                loadPatternData(data.current);
-            }
+            if (data.banks) { patternBanks = data.banks; updatePadUI(patternBanks); }
+            if (data.current) { loadPatternData(data.current); }
             let foundActive = false;
             for (let bank of ['A', 'B', 'C']) {
                 for (let i = 0; i < 4; i++) {
                     if (patternBanks[bank] && patternBanks[bank][i]) {
                         const padElem = document.querySelector(`.pad[data-bank="${bank}"][data-idx="${i}"]`);
                         if (padElem) padElem.classList.add("active");
-                        foundActive = true;
-                        break;
+                        foundActive = true; break;
                     }
                 }
                 if (foundActive) break;
@@ -325,6 +318,10 @@ function loadPatternData(d) {
     }
 }
 
+// ------------------------------------------------------------------
+// AUDIO SYNTHESE (Live)
+// ------------------------------------------------------------------
+
 function startLiveSynth(track, x, y) {
     const anySolo = tracks.some(t => t.solo);
     const isAudible = anySolo ? track.solo : !track.mute;
@@ -335,7 +332,7 @@ function startLiveSynth(track, x, y) {
     liveGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     
     const brush = brushSelect.value;
-    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "rorschach" ? 0.2 : 0.3));
+    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "overtone" ? 0.4 : (brush === "fm" ? 0.2 : 0.3)));
     liveGainNode.gain.linearRampToValueAtTime(maxVol, audioCtx.currentTime + 0.01);
     
     let targetNode = liveGainNode;
@@ -347,10 +344,8 @@ function startLiveSynth(track, x, y) {
         const morphVal = getKnobVal("FRACTAL", "MORPH") || 0;
         liveShaper.curve = getDistortionCurve(80 + (morphVal * 400));
         liveShaper.oversample = '4x';
-        
         liveCompGain = audioCtx.createGain();
         liveCompGain.gain.value = 1.0 - (morphVal * 0.5); 
-        
         liveShaper.connect(liveCompGain);
         liveCompGain.connect(liveGainNode);
         targetNode = liveShaper;
@@ -366,13 +361,19 @@ function startLiveSynth(track, x, y) {
     let baseFreq = mapYToFrequency(currentY, 100); 
     if (harmonizeCheckbox.checked) baseFreq = quantizeFrequency(baseFreq, scaleSelect.value);
     
-    const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : 
+    const ivs = (brush === "chord") ? (chordIntervals[chordSelect.value] || chordIntervals["major"]) : 
                 (brush === "xenakis" ? [0, 1, 2, 3, 4] : 
-                (brush === "rorschach" ? [0, "mirror"] : [0]));
+                (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : [0])); // FM und Rest nutzen 1 Stimme
 
     ivs.forEach((iv, i) => {
         const osc = audioCtx.createOscillator(); 
         osc.type = track.wave;
+
+        // Eigener Lautstärkeregler pro Stimme (Wichtig für Obertöne!)
+        let oscVol = audioCtx.createGain();
+        oscVol.gain.value = (brush === "overtone") ? ((1 / iv) * 0.4) : 1; 
+        osc.connect(oscVol);
+        oscVol.connect(targetNode);
 
         let finalDetune = 0;
         let currentFreq = baseFreq;
@@ -383,14 +384,35 @@ function startLiveSynth(track, x, y) {
             finalDetune = (offset * 0.05) + (waveMod * 0.15); 
         } else if (brush === "chord") {
             finalDetune = iv;
-        } else if (brush === "rorschach" && iv === "mirror") {
-            currentFreq = mapYToFrequency(100 - currentY, 100);
-            if (harmonizeCheckbox.checked) currentFreq = quantizeFrequency(currentFreq, scaleSelect.value);
+        } else if (brush === "overtone") {
+            currentFreq = baseFreq * iv; // Physikalische Spektral-Multiplikation!
         }
 
-        osc.frequency.setValueAtTime(currentFreq * Math.pow(2, finalDetune / 12), audioCtx.currentTime);
-        osc.connect(targetNode); 
-        osc.start(); liveNodes.push(osc);
+        const startFreq = currentFreq * Math.pow(2, finalDetune / 12);
+        osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
+        
+        // --- DX7 FM Modulator ---
+        if (brush === "fm") {
+            const mod = audioCtx.createOscillator();
+            mod.type = "sine"; 
+            const modGain = audioCtx.createGain();
+            
+            // Unreines Ratio (2.14) für metallischen FM-Sound
+            mod.frequency.setValueAtTime(startFreq * 2.14, audioCtx.currentTime);
+            const size = track.curSeg ? (track.curSeg.thickness || 5) : 5;
+            // Modulationsindex basiert auf Pinsel-Dicke!
+            modGain.gain.setValueAtTime(startFreq * (size * 0.4), audioCtx.currentTime);
+            
+            mod.connect(modGain);
+            modGain.connect(osc.frequency); // Moduliert die Tonhöhe des Trägers
+            mod.start();
+            
+            osc.mod = mod;
+            osc.modGain = modGain;
+        }
+
+        osc.start(); 
+        liveNodes.push(osc);
     });
     
     const trackG = audioCtx.createGain(); 
@@ -423,14 +445,22 @@ function updateLiveSynth(track, x, y) {
             const waveMod = Math.sin(x * 0.04 + offset * 1.5);
             finalDetune = (offset * 0.05) + (waveMod * 0.15);
         } else if (brush === "chord") {
-            const ivs = chordIntervals[chordSelect.value] || [0];
+            const ivs = chordIntervals[chordSelect.value] || chordIntervals["major"];
             finalDetune = ivs[i] || 0;
-        } else if (brush === "rorschach" && i === 1) { 
-            currentFreq = mapYToFrequency(100 - currentY, 100);
-            if (harmonizeCheckbox.checked) currentFreq = quantizeFrequency(currentFreq, scaleSelect.value);
+        } else if (brush === "overtone") {
+            const harmonic = i + 1; // 1, 2, 3, 4, 5, 6
+            currentFreq = baseFreq * harmonic;
         }
         
-        n.frequency.setTargetAtTime(currentFreq * Math.pow(2, finalDetune / 12), audioCtx.currentTime, 0.02); 
+        const targetF = currentFreq * Math.pow(2, finalDetune / 12);
+        n.frequency.setTargetAtTime(targetF, audioCtx.currentTime, 0.02); 
+
+        // Update für FM-Modulator
+        if (brush === "fm" && n.mod) {
+            n.mod.frequency.setTargetAtTime(targetF * 2.14, audioCtx.currentTime, 0.02);
+            const size = track.curSeg ? (track.curSeg.thickness || 5) : 5;
+            n.modGain.gain.setTargetAtTime(targetF * (size * 0.4), audioCtx.currentTime, 0.02);
+        }
     });
 }
 
@@ -443,7 +473,12 @@ function stopLiveSynth() {
 
     gn.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
     setTimeout(() => { 
-        ns.forEach(n => { try { n.stop(); n.disconnect(); } catch(e){} }); 
+        ns.forEach(n => { 
+            try { 
+                n.stop(); n.disconnect(); 
+                if (n.mod) { n.mod.stop(); n.mod.disconnect(); n.modGain.disconnect(); }
+            } catch(e){} 
+        }); 
         if (ls) ls.disconnect();
         if (cg) cg.disconnect();
         if (gn.out) gn.out.disconnect(); 
@@ -474,6 +509,10 @@ function triggerParticleGrain(track, y) {
     activeNodes.push(osc);
 }
 
+// ------------------------------------------------------------------
+// SEQUENZER (Playback Loop)
+// ------------------------------------------------------------------
+
 function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, offlineFX = null) {
     const anySolo = tracks.some(tr => tr.solo);
     tracks.forEach(track => {
@@ -487,25 +526,16 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
             let dryVol = 1.0;
             const hasFilter = getMatrixStateByName("FILTER", track.index);
             const hasStutter = getMatrixStateByName("STUTTER", track.index);
-            
-            if (hasFilter) dryVol = 0.0;
-            else if (hasStutter) dryVol = 1.0 - getKnobVal("STUTTER", "MIX");
-            
-            const dryGain = targetCtx.createGain();
-            dryGain.gain.value = dryVol;
-            trkG.connect(dryGain);
-            dryGain.connect(targetDest);
-
+            if (hasFilter) dryVol = 0.0; else if (hasStutter) dryVol = 1.0 - getKnobVal("STUTTER", "MIX");
+            const dryGain = targetCtx.createGain(); dryGain.gain.value = dryVol;
+            trkG.connect(dryGain); dryGain.connect(targetDest);
             if (getMatrixStateByName("DELAY", track.index)) trkG.connect(offlineFX.delay);
             if (getMatrixStateByName("VIBRATO", track.index)) trkG.connect(offlineFX.vibrato);
             if (getMatrixStateByName("REVERB", track.index) && offlineFX.reverbInput) trkG.connect(offlineFX.reverbInput); 
             if (hasFilter && offlineFX.filterInput) trkG.connect(offlineFX.filterInput);
-            
             if (hasStutter && offlineFX.stutter) {
-                const stutterSend = targetCtx.createGain();
-                stutterSend.gain.value = getKnobVal("STUTTER", "MIX");
-                trkG.connect(stutterSend);
-                stutterSend.connect(offlineFX.stutter);
+                const stutterSend = targetCtx.createGain(); stutterSend.gain.value = getKnobVal("STUTTER", "MIX");
+                trkG.connect(stutterSend); stutterSend.connect(offlineFX.stutter);
             }
         }
         
@@ -519,22 +549,27 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                 seg.points.forEach(p => {
                     const t = Math.max(0, start + (p.x / 750) * playbackDuration), osc = targetCtx.createOscillator(), env = targetCtx.createGain();
                     osc.type = track.wave; let f = mapYToFrequency(p.y, 100); if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
-                    
                     osc.frequency.value = f; 
                     env.gain.setValueAtTime(0, t); env.gain.linearRampToValueAtTime(0.4, t + 0.01); env.gain.exponentialRampToValueAtTime(0.01, t + 0.15); 
-                    
                     osc.connect(env).connect(trkG); 
                     osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
                     osc.start(t); osc.stop(t + 0.2); 
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             } else {
-                const ivs = (brush === "chord") ? chordIntervals[seg.chordType || "major"] : 
+                const ivs = (brush === "chord") ? (chordIntervals[seg.chordType || "major"] || chordIntervals["major"]) : 
                             (brush === "xenakis" ? [0, 1, 2, 3, 4] : 
-                            (brush === "rorschach" ? [0, "mirror"] : [0]));
+                            (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : [0]));
                 
                 ivs.forEach((iv, i) => {
-                    const osc = targetCtx.createOscillator(), g = targetCtx.createGain(); osc.type = track.wave;
+                    const osc = targetCtx.createOscillator(); 
+                    osc.type = track.wave;
+
+                    const oscVol = targetCtx.createGain();
+                    oscVol.gain.value = (brush === "overtone") ? ((1 / iv) * 0.4) : 1; 
+                    osc.connect(oscVol);
+                    
+                    const g = targetCtx.createGain(); 
                     
                     let shaper = null;
                     if (brush === "fractal") {
@@ -542,27 +577,32 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         const morphVal = getKnobVal("FRACTAL", "MORPH") || 0;
                         shaper.curve = getDistortionCurve(80 + (morphVal * 400));
                         shaper.oversample = '4x';
-                        
                         const compGain = targetCtx.createGain();
                         compGain.gain.value = 1.0 - (morphVal * 0.5); 
                         shaper.connect(compGain);
                         shaper.compGain = compGain; 
-                        
                         if (targetCtx === audioCtx) activeWaveShapers.push(shaper);
+                    }
+
+                    if (shaper) { oscVol.connect(shaper); shaper.compGain.connect(g); } 
+                    else { oscVol.connect(g); }
+                    g.connect(trkG); 
+
+                    // --- DX7 FM Modulator Setup (Offline/Playback) ---
+                    let mod = null, modGain = null;
+                    if (brush === "fm") {
+                        mod = targetCtx.createOscillator(); mod.type = "sine";
+                        modGain = targetCtx.createGain();
+                        mod.connect(modGain);
+                        modGain.connect(osc.frequency);
                     }
 
                     let tfPairs = [];
                     sorted.forEach(p => {
                         let cX = p.x, cY = p.y;
                         if (brush === "fractal") {
-                            cX += (p.rX || 0) * 50 * fractalChaos;
-                            cY += (p.rY || 0) * 100 * fractalChaos;
+                            cX += (p.rX || 0) * 50 * fractalChaos; cY += (p.rY || 0) * 100 * fractalChaos;
                         }
-
-                        if (brush === "rorschach" && iv === "mirror") {
-                            cY = 100 - cY;
-                        }
-
                         const t = Math.max(0, start + (cX / 750) * playbackDuration); 
                         let f = mapYToFrequency(cY, 100); 
                         if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
@@ -575,54 +615,61 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     const sT = tfPairs[0].t;
                     const eT = tfPairs[tfPairs.length - 1].t;
 
-                    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "rorschach" ? 0.2 : 0.3));
+                    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "overtone" ? 0.4 : (brush === "fm" ? 0.2 : 0.3)));
                     g.gain.setValueAtTime(0, sT); 
                     g.gain.linearRampToValueAtTime(maxVol, sT + 0.02); 
                     g.gain.setValueAtTime(maxVol, eT); 
                     g.gain.linearRampToValueAtTime(0, eT + 0.1);
-
-                    if (shaper) {
-                        osc.connect(shaper);
-                        shaper.compGain.connect(g);
-                    } else {
-                        osc.connect(g); 
-                    }
-                    g.connect(trkG); 
                     
                     tfPairs.forEach(pair => {
                         let finalDetune = 0;
+                        let playFreq = pair.f;
+
                         if (brush === "xenakis") {
                             const offset = i - 2;
                             const waveMod = Math.sin(pair.cX * 0.04 + offset * 1.5);
                             finalDetune = (offset * 0.05) + (waveMod * 0.15);
                         } else if (brush === "chord") {
                             finalDetune = iv;
+                        } else if (brush === "overtone") {
+                            playFreq = pair.f * iv;
                         }
 
-                        const playFreq = pair.f * Math.pow(2, finalDetune / 12);
-                        try { osc.frequency.linearRampToValueAtTime(playFreq, pair.t); } 
-                        catch(e) { osc.frequency.setTargetAtTime(playFreq, pair.t, 0.01); }
+                        const targetF = playFreq * Math.pow(2, finalDetune / 12);
+                        try { osc.frequency.linearRampToValueAtTime(targetF, pair.t); } 
+                        catch(e) { osc.frequency.setTargetAtTime(targetF, pair.t, 0.01); }
+
+                        // Envelope für den FM Modulator
+                        if (brush === "fm" && mod) {
+                            const modF = targetF * 2.14;
+                            const mIdx = targetF * ((seg.thickness || 5) * 0.4);
+                            try {
+                                mod.frequency.linearRampToValueAtTime(modF, pair.t);
+                                modGain.gain.linearRampToValueAtTime(mIdx, pair.t);
+                            } catch(e) {
+                                mod.frequency.setTargetAtTime(modF, pair.t, 0.01);
+                                modGain.gain.setTargetAtTime(mIdx, pair.t, 0.01);
+                            }
+                        }
                     });
                     
                     osc.updateChaos = (newChaos) => {
                         if (brush !== "fractal") return;
                         const now = targetCtx.currentTime;
                         osc.frequency.cancelScheduledValues(now); 
-                        
                         tfPairs.forEach(pair => {
                             if (pair.t >= now) {
                                 let cY = pair.origY + (pair.rY || 0) * 100 * newChaos;
                                 let f = mapYToFrequency(cY, 100);
                                 if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
-
-                                try { osc.frequency.linearRampToValueAtTime(f, pair.t); } 
-                                catch(e) { osc.frequency.setTargetAtTime(f, pair.t, 0.01); }
+                                try { osc.frequency.linearRampToValueAtTime(f, pair.t); } catch(e) { osc.frequency.setTargetAtTime(f, pair.t, 0.01); }
                             }
                         });
                     };
                     
                     osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
                     osc.start(sT); osc.stop(eT + 0.2); 
+                    if (mod) { mod.start(sT); mod.stop(eT + 0.2); }
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             }
@@ -756,10 +803,8 @@ function setupMainControls() {
                 playbackDuration = (60 / (parseFloat(document.getElementById("bpmInput").value) || 120)) * 32;
                 playbackStartTime = audioCtx.currentTime; 
                 isPlaying = true; 
-                
                 activeWaveShapers = []; 
                 scheduleTracks(playbackStartTime); 
-                
                 timerWorker.postMessage('start');
             }
         },
@@ -826,8 +871,7 @@ function setupMainControls() {
             const lengthInSamples = Math.floor(sampleRate * loopDur);
             const offCtx = new OfflineAudioContext(2, lengthInSamples, sampleRate);
             
-            const mDest = offCtx.createGain(); 
-            mDest.connect(offCtx.destination);
+            const mDest = offCtx.createGain(); mDest.connect(offCtx.destination);
             
             const fxOff = {
                 delay: offCtx.createDelay(), delayFbk: offCtx.createGain(),
@@ -920,10 +964,8 @@ function setupMainControls() {
         playbackDuration = (60 / (parseFloat(document.getElementById("bpmInput").value) || 120)) * 32;
         playbackStartTime = audioCtx.currentTime + 0.05; 
         isPlaying = true; 
-        
         activeWaveShapers = []; 
         scheduleTracks(playbackStartTime); 
-        
         timerWorker.postMessage('start');
     });
     
@@ -935,7 +977,6 @@ function setupMainControls() {
         activeWaveShapers = []; 
         tracks.forEach(t => { if(t.gainNode) t.gainNode.disconnect(); redrawTrack(t, undefined, brushSelect.value, chordIntervals, chordColors); });
         pigeonImg.style.transform = "scale(1)"; 
-        
         document.querySelectorAll(".pad.queued").forEach(p => p.classList.remove("queued")); 
     });
     
@@ -1032,10 +1073,8 @@ function setupPads() {
                 isSaveMode = false; 
                 document.getElementById("saveModeBtn").classList.remove("active"); 
                 updatePadUI(patternBanks);
-                
                 document.querySelectorAll(".pad.active").forEach(p => p.classList.remove("active"));
                 pad.classList.add("active");
-                
             } else if (patternBanks[b] && patternBanks[b][i]) {
                 if (isPlaying) { 
                     queuedPattern = { data: patternBanks[b][i], pad: pad }; 
@@ -1088,7 +1127,6 @@ function setupTracePad() {
                 chH.style.top = visualY + "px";
             }
         }
-        
         return { x: (cx - r.left) * (750 / r.width), y: (cy - r.top) * (100 / r.height) }; 
     };
     
@@ -1097,45 +1135,29 @@ function setupTracePad() {
 
     tracePad.addEventListener("mousedown", e => {
         e.preventDefault(); if (!isPlaying) return; initAudio(tracks, updateRoutingFromUI); isTracing = true; const pos = getPadPos(e); traceCurrentY = pos.y;
-        
-        saveState(); 
-        isEffectMode = document.querySelectorAll('.fx-xy-link.active').length > 0;
+        saveState(); isEffectMode = document.querySelectorAll('.fx-xy-link.active').length > 0;
         
         if (!isEffectMode) { 
             const elapsed = audioCtx.currentTime - playbackStartTime;
             const currentX = (elapsed / playbackDuration) * 750; 
-            
-            const rX = Math.random() - 0.5;
-            const rY = Math.random() - 0.5;
-
+            const rX = Math.random() - 0.5; const rY = Math.random() - 0.5;
             traceCurrentSeg = { points: [{ x: currentX, y: traceCurrentY, rX, rY }], brush: brushSelect.value, thickness: parseInt(sizeSlider.value), chordType: chordSelect.value }; 
             tracks[currentTargetTrack].segments.push(traceCurrentSeg); 
             if (brushSelect.value === "particles") triggerParticleGrain(tracks[currentTargetTrack], traceCurrentY); 
             else startLiveSynth(tracks[currentTargetTrack], currentX, traceCurrentY); 
-        } else {
-            traceCurrentSeg = null; 
-        }
+        } else { traceCurrentSeg = null; }
     });
     
     tracePad.addEventListener("mousemove", e => { 
         if(crosshair && !e.touches) getPadPos(e); 
         if (isTracing) { 
-            const pos = getPadPos(e); 
-            traceCurrentY = pos.y; 
-            if (!isEffectMode) { 
-                if (brushSelect.value !== "particles") {
-                    updateLiveSynth(tracks[currentTargetTrack], pos.x, traceCurrentY); 
-                }
-            } 
+            const pos = getPadPos(e); traceCurrentY = pos.y; 
+            if (!isEffectMode) { if (brushSelect.value !== "particles") { updateLiveSynth(tracks[currentTargetTrack], pos.x, traceCurrentY); } } 
         } 
     });
     
     window.addEventListener("mouseup", () => { 
-        if (isTracing) { 
-            if (!isEffectMode) stopLiveSynth(); 
-            isTracing = false; 
-            redrawTrack(tracks[currentTargetTrack], undefined, brushSelect.value, chordIntervals, chordColors); 
-        } 
+        if (isTracing) { if (!isEffectMode) stopLiveSynth(); isTracing = false; redrawTrack(tracks[currentTargetTrack], undefined, brushSelect.value, chordIntervals, chordColors); } 
     });
     
     tracePad.addEventListener("touchstart", (e) => { if(crosshair) crosshair.style.display = "block"; }, {passive: false});
@@ -1143,11 +1165,7 @@ function setupTracePad() {
 
     document.querySelectorAll(".picker-btn").forEach(btn => btn.addEventListener("click", () => { document.querySelectorAll(".picker-btn").forEach(b => b.classList.remove("active")); btn.classList.add("active"); currentTargetTrack = parseInt(btn.dataset.target); }));
     
-    document.getElementById("traceClearBtn").addEventListener("click", () => { 
-        saveState();
-        tracks[currentTargetTrack].segments = []; 
-        redrawTrack(tracks[currentTargetTrack], undefined, brushSelect.value, chordIntervals, chordColors); 
-    });
+    document.getElementById("traceClearBtn").addEventListener("click", () => { saveState(); tracks[currentTargetTrack].segments = []; redrawTrack(tracks[currentTargetTrack], undefined, brushSelect.value, chordIntervals, chordColors); });
 }
 
 function setupFX() {
@@ -1157,7 +1175,6 @@ function setupFX() {
             const unit = knob.closest('.fx-unit');
             const header = unit.querySelector('.fx-header');
             if (!header || !knob.nextElementSibling) return;
-            
             const title = header.textContent.toUpperCase();
             const param = knob.nextElementSibling.textContent.trim();
             
@@ -1191,13 +1208,11 @@ function setupFX() {
             else if (title.includes("FRACTAL")) {
                 if (param === "MORPH") {
                     const newCurve = getDistortionCurve(80 + (val * 400)); 
-                    const compVal = 1.0 - (val * 0.5); // Lautstärke drosseln beim Aufdrehen
-
+                    const compVal = 1.0 - (val * 0.5); 
                     activeWaveShapers.forEach(sh => {
                         sh.curve = newCurve;
                         if (sh.compGain) sh.compGain.gain.setTargetAtTime(compVal, audioCtx.currentTime, 0.05);
                     });
-                    
                     if (liveShaper) {
                         liveShaper.curve = newCurve;
                         if (liveCompGain) liveCompGain.gain.setTargetAtTime(compVal, audioCtx.currentTime, 0.05);
@@ -1205,9 +1220,7 @@ function setupFX() {
                 }
                 if (param === "CHAOS") {
                     if (audioCtx) {
-                        activeNodes.forEach(osc => {
-                            if (osc.updateChaos) osc.updateChaos(val);
-                        });
+                        activeNodes.forEach(osc => { if (osc.updateChaos) osc.updateChaos(val); });
                     }
                 }
             }
@@ -1219,15 +1232,10 @@ function setupFX() {
 
 function updateRoutingFromUI() {
     if (!audioCtx) return;
-    
-    const filterActive = [];
-    const stutterActive = [];
-
+    const filterActive = []; const stutterActive = [];
     document.querySelectorAll('.fx-unit').forEach(unit => {
-        const header = unit.querySelector('.fx-header');
-        if(!header) return;
+        const header = unit.querySelector('.fx-header'); if(!header) return;
         const title = header.textContent.toUpperCase();
-        
         let fxName = null;
         if (title.includes("DELAY")) fxName = "delay";
         else if (title.includes("REVERB")) fxName = "reverb";
@@ -1259,10 +1267,7 @@ function updateRoutingFromUI() {
         if (trackSends[idx] && trackSends[idx].dry) {
             let dryVol = 1.0;
             if (filterActive[idx]) dryVol = 0.0; 
-            else if (stutterActive[idx]) {
-                const mix = getKnobVal("STUTTER", "MIX");
-                dryVol = 1.0 - mix; 
-            }
+            else if (stutterActive[idx]) { dryVol = 1.0 - getKnobVal("STUTTER", "MIX"); }
             trackSends[idx].dry.gain.setTargetAtTime(dryVol, audioCtx.currentTime, 0.05);
         }
     });
@@ -1274,89 +1279,33 @@ function loop() {
     
     if (elapsed >= playbackDuration) {
         let oldDuration = playbackDuration; 
-
-        if (queuedPattern) { 
-            loadPatternData(queuedPattern.data); 
-            document.querySelectorAll(".pad").forEach(p => p.classList.remove("active", "queued")); 
-            queuedPattern.pad.classList.add("active"); 
-            queuedPattern = null; 
-        }
-        
+        if (queuedPattern) { loadPatternData(queuedPattern.data); document.querySelectorAll(".pad").forEach(p => p.classList.remove("active", "queued")); queuedPattern.pad.classList.add("active"); queuedPattern = null; }
         if (document.getElementById("loopCheckbox").checked) { 
-            playbackStartTime += oldDuration; 
-            activeWaveShapers = []; 
-            scheduleTracks(playbackStartTime); 
-            elapsed = audioCtx.currentTime - playbackStartTime; 
-            
-            if (isTracing && traceCurrentSeg) { 
-                saveState(); 
-                traceCurrentSeg = { points: [], brush: brushSelect.value, thickness: parseInt(sizeSlider.value), chordType: chordSelect.value }; 
-                tracks[currentTargetTrack].segments.push(traceCurrentSeg); 
-            } 
-        }
-        else { isPlaying = false; return; }
+            playbackStartTime += oldDuration; activeWaveShapers = []; scheduleTracks(playbackStartTime); elapsed = audioCtx.currentTime - playbackStartTime; 
+            if (isTracing && traceCurrentSeg) { saveState(); traceCurrentSeg = { points: [], brush: brushSelect.value, thickness: parseInt(sizeSlider.value), chordType: chordSelect.value }; tracks[currentTargetTrack].segments.push(traceCurrentSeg); } 
+        } else { isPlaying = false; return; }
     }
     
     const x = (elapsed / playbackDuration) * 750; 
-    
     if (isTracing && !isEffectMode && traceCurrentSeg) { 
-        const rX = Math.random() - 0.5;
-        const rY = Math.random() - 0.5;
-        traceCurrentSeg.points.push({ x, y: traceCurrentY, rX, rY }); 
-        
-        if (brushSelect.value === "particles") {
-            triggerParticleGrain(tracks[currentTargetTrack], traceCurrentY);
-        }
+        const rX = Math.random() - 0.5; const rY = Math.random() - 0.5; traceCurrentSeg.points.push({ x, y: traceCurrentY, rX, rY }); 
+        if (brushSelect.value === "particles") triggerParticleGrain(tracks[currentTargetTrack], traceCurrentY);
     }
 
     if (isTracing && audioCtx && isEffectMode) {
-        const linkedFX = getLinkedFX();
-        const normX = x / 750; 
-        const normY = 1.0 - (traceCurrentY / 100); 
+        const linkedFX = getLinkedFX(); const normX = x / 750; const normY = 1.0 - (traceCurrentY / 100); 
         linkedFX.forEach(fx => {
-            if(fx === "delay" && fxNodes.delay.node) {
-                fxNodes.delay.node.delayTime.setTargetAtTime(normX * 1.0, audioCtx.currentTime, 0.05); 
-                fxNodes.delay.feedback.gain.setTargetAtTime(normY * 0.9, audioCtx.currentTime, 0.05); 
-            }
-            if(fx === "vibrato" && fxNodes.vibrato.lfo) {
-                fxNodes.vibrato.lfo.frequency.setTargetAtTime(normX * 20, audioCtx.currentTime, 0.05); 
-                fxNodes.vibrato.depthNode.gain.setTargetAtTime(normY * 0.01, audioCtx.currentTime, 0.05); 
-            }
-            if(fx === "reverb" && fxNodes.reverb.mix) {
-                fxNodes.reverb.mix.gain.setTargetAtTime(normY * 1.5, audioCtx.currentTime, 0.05); 
-                updateReverbDecay(normX);
-            }
-            if(fx === "filter" && fxNodes.filter && fxNodes.filter.node1) {
-                const cutoff = Math.pow(normX, 3) * 22000;
-                fxNodes.filter.node1.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.05);
-                fxNodes.filter.node2.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.05);
-                fxNodes.filter.node1.Q.setTargetAtTime(normY * 15, audioCtx.currentTime, 0.05);
-                fxNodes.filter.node2.Q.setTargetAtTime(normY * 15, audioCtx.currentTime, 0.05);
-            }
+            if(fx === "delay" && fxNodes.delay.node) { fxNodes.delay.node.delayTime.setTargetAtTime(normX * 1.0, audioCtx.currentTime, 0.05); fxNodes.delay.feedback.gain.setTargetAtTime(normY * 0.9, audioCtx.currentTime, 0.05); }
+            if(fx === "vibrato" && fxNodes.vibrato.lfo) { fxNodes.vibrato.lfo.frequency.setTargetAtTime(normX * 20, audioCtx.currentTime, 0.05); fxNodes.vibrato.depthNode.gain.setTargetAtTime(normY * 0.01, audioCtx.currentTime, 0.05); }
+            if(fx === "reverb" && fxNodes.reverb.mix) { fxNodes.reverb.mix.gain.setTargetAtTime(normY * 1.5, audioCtx.currentTime, 0.05); updateReverbDecay(normX); }
+            if(fx === "filter" && fxNodes.filter && fxNodes.filter.node1) { const cutoff = Math.pow(normX, 3) * 22000; fxNodes.filter.node1.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.05); fxNodes.filter.node2.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.05); fxNodes.filter.node1.Q.setTargetAtTime(normY * 15, audioCtx.currentTime, 0.05); fxNodes.filter.node2.Q.setTargetAtTime(normY * 15, audioCtx.currentTime, 0.05); }
             if(fx === "stutter" && fxNodes.stutter) {
                 fxNodes.stutter.lfo.frequency.setTargetAtTime((normX * 15) + 1, audioCtx.currentTime, 0.05);
-                document.querySelectorAll('.fx-unit').forEach(unit => {
-                    const header = unit.querySelector('.fx-header');
-                    if (header && header.textContent.toUpperCase().includes("STUTTER")) {
-                        const knobs = unit.querySelectorAll('.knob');
-                        if(knobs[1]) { knobs[1].dataset.val = normY; knobs[1].style.transform = `rotate(${-135 + (normY * 270)}deg)`; }
-                    }
-                });
+                document.querySelectorAll('.fx-unit').forEach(unit => { const header = unit.querySelector('.fx-header'); if (header && header.textContent.toUpperCase().includes("STUTTER")) { const knobs = unit.querySelectorAll('.knob'); if(knobs[1]) { knobs[1].dataset.val = normY; knobs[1].style.transform = `rotate(${-135 + (normY * 270)}deg)`; } } });
                 updateRoutingFromUI();
             }
             if(fx === "fractal") {
-                document.querySelectorAll('.fx-unit').forEach(unit => {
-                    const header = unit.querySelector('.fx-header');
-                    if (header && header.textContent.toUpperCase().includes("FRACTAL")) {
-                        const knobs = unit.querySelectorAll('.knob');
-                        if(knobs[0]) { knobs[0].dataset.val = normX; knobs[0].style.transform = `rotate(${-135 + (normX * 270)}deg)`; }
-                        if(knobs[1]) { 
-                            knobs[1].dataset.val = normY; knobs[1].style.transform = `rotate(${-135 + (normY * 270)}deg)`; 
-                            const newCurve = getDistortionCurve(80 + (normY * 400));
-                            activeWaveShapers.forEach(sh => sh.curve = newCurve);
-                        }
-                    }
-                });
+                document.querySelectorAll('.fx-unit').forEach(unit => { const header = unit.querySelector('.fx-header'); if (header && header.textContent.toUpperCase().includes("FRACTAL")) { const knobs = unit.querySelectorAll('.knob'); if(knobs[0]) { knobs[0].dataset.val = normX; knobs[0].style.transform = `rotate(${-135 + (normX * 270)}deg)`; } if(knobs[1]) { knobs[1].dataset.val = normY; knobs[1].style.transform = `rotate(${-135 + (normY * 270)}deg)`; const newCurve = getDistortionCurve(80 + (normY * 400)); activeWaveShapers.forEach(sh => sh.curve = newCurve); } } });
             }
         });
     }
@@ -1365,14 +1314,8 @@ function loop() {
     const dataArray = new Uint8Array(analyser.frequencyBinCount); analyser.getByteFrequencyData(dataArray);
     let avg = dataArray.reduce((a, b) => a + b) / dataArray.length; let d = avg - lastAvg; lastAvg = avg;
     
-    let scaleX = 1 + Math.min(0.2, d / 100);
-    let scaleY = 1 - Math.min(0.5, d / 50);
-    
-    let isFractalPlaying = false;
-    
-    if (liveGainNode && brushSelect.value === "fractal") {
-        isFractalPlaying = true; 
-    }
+    let scaleX = 1 + Math.min(0.2, d / 100); let scaleY = 1 - Math.min(0.5, d / 50); let isFractalPlaying = false;
+    if (liveGainNode && brushSelect.value === "fractal") isFractalPlaying = true; 
     
     if (isPlaying) {
         const anySolo = tracks.some(t => t.solo);
@@ -1380,116 +1323,44 @@ function loop() {
             if (track.mute || (anySolo && !track.solo)) return; 
             track.segments.forEach(seg => {
                 if (seg.brush === "fractal" && seg.points.length > 0) {
-                    const sorted = seg.points.slice().sort((a, b) => a.x - b.x);
-                    const startX = sorted[0].x;
-                    const endX = sorted[sorted.length - 1].x;
-                    if (x >= startX && x <= endX + 10) {
-                        isFractalPlaying = true;
-                    }
+                    const sorted = seg.points.slice().sort((a, b) => a.x - b.x); const startX = sorted[0].x; const endX = sorted[sorted.length - 1].x;
+                    if (x >= startX && x <= endX + 10) isFractalPlaying = true;
                 }
             });
         });
     }
     
     if (isFractalPlaying) {
-        const jitterX = (Math.random() - 0.5) * 15;
-        const jitterY = (Math.random() - 0.5) * 15;
+        const jitterX = (Math.random() - 0.5) * 15; const jitterY = (Math.random() - 0.5) * 15;
         pigeonImg.style.transform = `scale(${scaleX}, ${scaleY}) translate(${jitterX}px, ${jitterY}px)`;
-        pigeonImg.style.filter = `
-            drop-shadow(${jitterX * 1.5}px ${jitterY * 1.5}px 0 rgba(255, 0, 0, 0.8)) 
-            drop-shadow(${-jitterX * 1.5}px ${-jitterY * 1.5}px 0 rgba(0, 255, 255, 0.8))
-            hue-rotate(${Math.random() * 360}deg)
-            contrast(150%)
-        `;
+        pigeonImg.style.filter = `drop-shadow(${jitterX * 1.5}px ${jitterY * 1.5}px 0 rgba(255, 0, 0, 0.8)) drop-shadow(${-jitterX * 1.5}px ${-jitterY * 1.5}px 0 rgba(0, 255, 255, 0.8)) hue-rotate(${Math.random() * 360}deg) contrast(150%)`;
     } else {
-        pigeonImg.style.transform = `scale(${scaleX}, ${scaleY}) translate(0px, 0px)`;
-        pigeonImg.style.filter = 'none';
+        pigeonImg.style.transform = `scale(${scaleX}, ${scaleY}) translate(0px, 0px)`; pigeonImg.style.filter = 'none';
     }
 }
 
 function setupTrackControls(t) {
-    const cont = t.canvas.closest('.track-container'); 
-    if(!cont) return;
-    
-    cont.querySelectorAll(".wave-btn").forEach(b => b.addEventListener("click", () => { 
-        t.wave = b.dataset.wave; 
-        cont.querySelectorAll(".wave-btn").forEach(btn => btn.classList.remove("active")); 
-        b.classList.add("active"); 
-    }));
-    
-    const muteBtn = cont.querySelector(".mute-btn");
-    if(muteBtn) {
-        muteBtn.addEventListener("click", e => { 
-            t.mute = !t.mute; 
-            muteBtn.classList.toggle("active", t.mute); 
-            applyAllVolumes(); 
-        });
-    }
-
-    const soloBtn = cont.querySelector(".btn--solo");
-    if(soloBtn) {
-        soloBtn.addEventListener("click", e => {
-            t.solo = !t.solo;
-            soloBtn.classList.toggle("active", t.solo);
-            applyAllVolumes();
-        });
-    }
-
-    const volSlider = cont.querySelector(".volume-slider");
-    if(volSlider) volSlider.addEventListener("input", e => { 
-        t.vol = parseFloat(e.target.value); 
-        applyAllVolumes(); 
-    });
-    
-    const snapBox = cont.querySelector(".snap-checkbox");
-    if(snapBox) snapBox.addEventListener("change", e => t.snap = e.target.checked);
+    const cont = t.canvas.closest('.track-container'); if(!cont) return;
+    cont.querySelectorAll(".wave-btn").forEach(b => b.addEventListener("click", () => { t.wave = b.dataset.wave; cont.querySelectorAll(".wave-btn").forEach(btn => btn.classList.remove("active")); b.classList.add("active"); }));
+    const muteBtn = cont.querySelector(".mute-btn"); if(muteBtn) { muteBtn.addEventListener("click", e => { t.mute = !t.mute; muteBtn.classList.toggle("active", t.mute); applyAllVolumes(); }); }
+    const soloBtn = cont.querySelector(".btn--solo"); if(soloBtn) { soloBtn.addEventListener("click", e => { t.solo = !t.solo; soloBtn.classList.toggle("active", t.solo); applyAllVolumes(); }); }
+    const volSlider = cont.querySelector(".volume-slider"); if(volSlider) volSlider.addEventListener("input", e => { t.vol = parseFloat(e.target.value); applyAllVolumes(); });
+    const snapBox = cont.querySelector(".snap-checkbox"); if(snapBox) snapBox.addEventListener("change", e => t.snap = e.target.checked);
 }
 
 const peakDataArray = new Float32Array(256);
-const clippingLEDs = [
-    document.getElementById('peak-t1'),
-    document.getElementById('peak-t2'),
-    document.getElementById('peak-t3'),
-    document.getElementById('peak-t4')
-];
+const clippingLEDs = [ document.getElementById('peak-t1'), document.getElementById('peak-t2'), document.getElementById('peak-t3'), document.getElementById('peak-t4') ];
 
 function updateClippingLEDs() {
-    if (!audioCtx || !trackAnalysers || trackAnalysers.length === 0) {
-        requestAnimationFrame(updateClippingLEDs);
-        return;
-    }
-
+    if (!audioCtx || !trackAnalysers || trackAnalysers.length === 0) { requestAnimationFrame(updateClippingLEDs); return; }
     for (let i = 0; i < 4; i++) {
-        const analyser = trackAnalysers[i];
-        const led = clippingLEDs[i];
-        
-        if (!analyser || !led) continue;
-        
+        const analyser = trackAnalysers[i]; const led = clippingLEDs[i]; if (!analyser || !led) continue;
         analyser.getFloatTimeDomainData(peakDataArray);
-        
         let maxPeak = 0;
-        for (let j = 0; j < peakDataArray.length; j++) {
-            const absValue = Math.abs(peakDataArray[j]);
-            if (absValue > maxPeak) {
-                maxPeak = absValue;
-            }
-        }
-
-        if (maxPeak >= 0.95) {
-            led.classList.add('peak');
-            led.classList.remove('warning');
-        } else if (maxPeak >= 0.75) {
-            led.classList.add('warning');
-            led.classList.remove('peak');
-        } else {
-            led.classList.remove('peak');
-            led.classList.remove('warning');
-        }
-        
+        for (let j = 0; j < peakDataArray.length; j++) { const absValue = Math.abs(peakDataArray[j]); if (absValue > maxPeak) maxPeak = absValue; }
+        if (maxPeak >= 0.95) { led.classList.add('peak'); led.classList.remove('warning'); } else if (maxPeak >= 0.75) { led.classList.add('warning'); led.classList.remove('peak'); } else { led.classList.remove('peak'); led.classList.remove('warning'); }
         led.style.background = ''; 
     }
-
     requestAnimationFrame(updateClippingLEDs);
 }
-
 updateClippingLEDs();

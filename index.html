@@ -210,6 +210,8 @@
               <option value="fractal">Fractal</option>
               <option value="xenakis">Xenakids</option>
               <option value="rorschach">Rorbach</option>
+              <option value="overtone">Overtone</option>
+              <option value="fm">DX7</option> 
               <option value="chord">Chord</option>
             </select>
           </div>
@@ -483,7 +485,6 @@
             <li><strong>Pattern wählen:</strong> Klicke unten rechts in der <em>Pattern Bank</em> auf ein leeres Pad (z.B. unter 'A'), um dort deinen ersten Loop zu starten.</li>
             <li><strong>Zeichnen:</strong> Klicke und ziehe mit der Maus auf den weißen Leinwänden (Canvas), um Töne einzuzeichnen. Oben = hohe Töne, Unten = tiefe Töne.</li>
             <li><strong>Tools:</strong> Wähle links zwischen <em>Draw</em> (Zeichnen) und <em>Erase</em> (Radieren).</li>
-            <li><strong>Pinsel:</strong> Nutze verschiedene Brushes (z.B. Particles oder Chord) für komplexe Klangtexturen.</li>
           </ul>
         </div>
         <div class="help-section">
@@ -508,11 +509,23 @@
           <ul>
             <li><strong>Play/Stop:</strong> Starte den Loop (Shortcut: <em>Leertaste</em>).</li>
             <li><strong>Harmonize:</strong> Zwingt alle eingezeichneten Frequenzen auf eine feste musikalische Tonleiter (z.B. Minor/Moll).</li>
-            <li><strong>EXT SYNC (DAW Setup):</strong> Erstelle ein virtuelles MIDI-Kabel (Mac: <em>IAC-Treiber</em>, Win: <em>loopMIDI</em>). Aktiviere in deiner DAW (z.B. Ableton) den Sync-Out für dieses Kabel. Wähle den Port im Dropdown und aktiviere EXT SYNC.</li>
+            <li><strong>EXT SYNC (DAW Setup):</strong> Erstelle ein virtuelles MIDI-Kabel (Mac: <em>IAC-Treiber</em>, Win: <em>loopMIDI</em>). Aktiviere in deiner DAW den Sync-Out. Wähle den Port im Dropdown und aktiviere EXT SYNC.</li>
           </ul>
         </div>
+        
         <div class="help-section" style="grid-column: 1 / -1;">
-          <h3>5. Speichern, Export & Aktionen</h3>
+          <h3>5. Die Pinsel (Brushes)</h3>
+          <ul style="column-count: 2; column-gap: 40px;">
+            <li><strong>Standard / Pressure / Calligraphy:</strong> Klassische Pinsel für sanfte Melodien und gleitende Tonübergänge (Portamento).</li>
+            <li><strong>Particles:</strong> Zeichnet eine Punktewolke. Erzeugt ganz kurze, körnige und prasselnde Töne (Granular-Effekt).</li>
+            <li><strong>Chord:</strong> Malt drei parallele Linien. Unter dem Pinsel-Menü erscheint ein Dropdown, mit dem du den Akkord (Major, Minor, etc.) bestimmen kannst.</li>
+            <li><strong>Xenakis Swarm:</strong> Zeichnet fünf schwingende Linien. Die Tonhöhen kreisen umeinander und formen einen dichten, leicht verstimmten "Schwarm-Effekt".</li>
+            <li style="break-inside: avoid;"><strong>Fractal:</strong> Ein chaotischer Synthesizer-Pinsel. <br><em>Bedienung:</em> Nutze das "FRACTAL" Modul rechts bei den Effekten. <br>→ <strong>CHAOS:</strong> Lässt die Töne zufällig zittern.<br>→ <strong>MORPH:</strong> Verzerrt die Schallwelle aggressiv (Wavefolding) und gibt der gezeichneten Linie eine rot leuchtende Kontur (Clipping).</li>
+          </ul>
+        </div>
+
+        <div class="help-section" style="grid-column: 1 / -1; border-top: 1px solid var(--color-border-btn); padding-top: 15px;">
+          <h3>6. Speichern, Export & Aktionen</h3>
           <ul style="column-count: 2; column-gap: 40px;">
             <li><strong>Pattern speichern:</strong> Klicke auf <strong>SAVE</strong> (pulsiert rot) und danach auf ein leeres Pad in der Bank, um den aktuellen Loop zu sichern.</li>
             <li><strong>Live Arrangement:</strong> Klicke während dem Playback auf gespeicherte Pads, um musikalisch zwischen ihnen zu wechseln.</li>
@@ -533,7 +546,6 @@
             <li><strong>Select Pattern:</strong> Click an empty pad in the <em>Pattern Bank</em> (bottom right, e.g., row 'A') to start your first loop.</li>
             <li><strong>Draw:</strong> Click and drag on the white canvas to draw notes. Top = high pitch, Bottom = low pitch.</li>
             <li><strong>Tools:</strong> Choose between <em>Draw</em> and <em>Erase</em> on the left.</li>
-            <li><strong>Brush:</strong> Use different brushes (e.g., Particles or Chord) for complex textures.</li>
           </ul>
         </div>
         <div class="help-section">
@@ -558,11 +570,23 @@
           <ul>
             <li><strong>Play/Stop:</strong> Start the loop (Shortcut: <em>Spacebar</em>).</li>
             <li><strong>Harmonize:</strong> Forces all your drawings into a clean musical scale (e.g., Minor).</li>
-            <li><strong>EXT SYNC (DAW Setup):</strong> Use a virtual MIDI cable (Mac: <em>IAC Driver</em>, Win: <em>loopMIDI</em>). Enable Sync output for it in your DAW (e.g., Ableton). Select the port here and hit EXT SYNC.</li>
+            <li><strong>EXT SYNC (DAW Setup):</strong> Use a virtual MIDI cable (Mac: <em>IAC Driver</em>, Win: <em>loopMIDI</em>). Enable Sync output for it in your DAW. Select the port here and hit EXT SYNC.</li>
           </ul>
         </div>
+        
         <div class="help-section" style="grid-column: 1 / -1;">
-          <h3>5. Save, Export & Actions</h3>
+          <h3>5. The Brushes</h3>
+          <ul style="column-count: 2; column-gap: 40px;">
+            <li><strong>Standard / Pressure / Calligraphy:</strong> Classic brushes for smooth melodies and glissandos.</li>
+            <li><strong>Particles:</strong> Draws a cloud of dots. Creates short, grainy, and scattering sounds (Granular Synthesis).</li>
+            <li><strong>Chord:</strong> Draws 3 parallel lines to form a chord. A secondary dropdown appears to let you pick the chord type (Major, Minor, etc.).</li>
+            <li><strong>Xenakis Swarm:</strong> Draws 5 oscillating lines. The frequencies orbit each other, creating a thick, slightly detuned "swarm" effect.</li>
+            <li style="break-inside: avoid;"><strong>Fractal:</strong> A chaotic synthesizer brush. <br><em>How to use:</em> Use the "FRACTAL" FX module. <br>→ <strong>CHAOS:</strong> Randomizes the pitch for a nervous sound.<br>→ <strong>MORPH:</strong> Applies distortion (WaveShaper) and adds a red clipping aura to your line.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" style="grid-column: 1 / -1; border-top: 1px solid var(--color-border-btn); padding-top: 15px;">
+          <h3>6. Save, Export & Actions</h3>
           <ul style="column-count: 2; column-gap: 40px;">
             <li><strong>Save Pattern:</strong> Click <strong>SAVE</strong> (pulses red), then click an empty pad to store your current loop.</li>
             <li><strong>Live Arrangement:</strong> Click saved pads during playback to queue and switch patterns seamlessly.</li>
