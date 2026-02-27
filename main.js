@@ -333,10 +333,14 @@ function startLiveSynth(track, y) {
     if (!isAudible || track.vol < 0.01) return;
     
     liveNodes = []; liveGainNode = audioCtx.createGain(); liveGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-    liveGainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+    
+    const brush = brushSelect.value;
+    
+    // NEU: Lautstärke bei Xenakis drosseln, weil 5 Töne gleichzeitig spielen
+    const maxVol = brush === "xenakis" ? 0.15 : 0.3;
+    liveGainNode.gain.linearRampToValueAtTime(maxVol, audioCtx.currentTime + 0.01);
     
     let currentY = y;
-    const brush = brushSelect.value;
     
     // CHAOS: Y-Koordinate direkt visuell anpassen
     if (brush === "fractal" && track.curSeg && track.curSeg.points.length > 0) {
@@ -348,13 +352,14 @@ function startLiveSynth(track, y) {
     let freq = mapYToFrequency(currentY, 100); 
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
-    const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : [0];
+    // NEU: Xenakis bekommt 5 Stimmen mit -15 bis +15 Cents Verstimmung
+    const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]);
 
     ivs.forEach(iv => {
         const osc = audioCtx.createOscillator(); 
         osc.type = track.wave;
         osc.frequency.setValueAtTime(freq * Math.pow(2, iv / 12), audioCtx.currentTime);
-        osc.connect(liveGainNode); // <-- Kein Verzerrer mehr, reiner Sound!
+        osc.connect(liveGainNode); 
         osc.start(); liveNodes.push(osc);
     });
     
@@ -369,7 +374,8 @@ function updateLiveSynth(track, y) {
     if (!liveGainNode) return;
     
     let currentY = y;
-    if (brushSelect.value === "fractal" && track.curSeg && track.curSeg.points.length > 0) {
+    const brush = brushSelect.value;
+    if (brush === "fractal" && track.curSeg && track.curSeg.points.length > 0) {
         const fractalChaos = getKnobVal("FRACTAL", "CHAOS") || 0;
         const p = track.curSeg.points[track.curSeg.points.length - 1];
         currentY += (p.rY || 0) * 100 * fractalChaos;
@@ -379,7 +385,8 @@ function updateLiveSynth(track, y) {
     if (harmonizeCheckbox.checked) freq = quantizeFrequency(freq, scaleSelect.value);
     
     liveNodes.forEach((n, i) => { 
-        const ivs = (brushSelect.value === "chord") ? chordIntervals[chordSelect.value] : [0]; 
+        // NEU: Hier ebenfalls Xenakis in den Tonhöhen-Wechsel aufnehmen
+        const ivs = (brush === "chord") ? chordIntervals[chordSelect.value] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]); 
         n.frequency.setTargetAtTime(freq * Math.pow(2, (ivs[i] || 0) / 12), audioCtx.currentTime, 0.02); 
     });
 }
@@ -482,7 +489,8 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             } else {
-                const ivs = (brush === "chord") ? chordIntervals[seg.chordType || "major"] : [0];
+                // NEU: Auch in der fertigen Zeitleiste Xenakis Intervalle berechnen
+                const ivs = (brush === "chord") ? chordIntervals[seg.chordType || "major"] : (brush === "xenakis" ? [-0.15, -0.05, 0, 0.05, 0.15] : [0]);
                 
                 ivs.forEach(iv => {
                     const osc = targetCtx.createOscillator(), g = targetCtx.createGain(); osc.type = track.wave;
@@ -506,9 +514,11 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     const sT = tfPairs[0].t;
                     const eT = tfPairs[tfPairs.length - 1].t;
 
+                    // NEU: Xenakis Lautstärke (maxVol) drosseln
+                    const maxVol = brush === "xenakis" ? 0.15 : 0.3;
                     g.gain.setValueAtTime(0, sT); 
-                    g.gain.linearRampToValueAtTime(0.3, sT + 0.02); 
-                    g.gain.setValueAtTime(0.3, eT); 
+                    g.gain.linearRampToValueAtTime(maxVol, sT + 0.02); 
+                    g.gain.setValueAtTime(maxVol, eT); 
                     g.gain.linearRampToValueAtTime(0, eT + 0.1);
 
                     osc.connect(g); 
@@ -518,40 +528,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         try { osc.frequency.linearRampToValueAtTime(pair.f * Math.pow(2, iv/12), pair.t); } 
                         catch(e) { osc.frequency.setTargetAtTime(pair.f * Math.pow(2, iv/12), pair.t, 0.01); }
                     });
-
-                    // NEU: Die Superkraft-Funktion für den Live-Pitch-Bend
-                    if (targetCtx === audioCtx && brush === "fractal") {
-                        osc.updateChaos = (newChaos) => {
-                            const now = audioCtx.currentTime;
-                            try { 
-                                osc.frequency.cancelAndHoldAtTime(now); 
-                            } catch(e) { 
-                                osc.frequency.cancelScheduledValues(now); 
-                            }
-                            
-                            let futurePairs = [];
-                            sorted.forEach(p => {
-                                // WICHTIG: Die Zeitachse (X) bleibt für den aktuell laufenden Ton starr, 
-                                // um Knackser und Engine-Crashes zu verhindern!
-                                let cX = p.x + (p.rX || 0) * 50 * fractalChaos; 
-                                const t = Math.max(0, start + (cX / 750) * playbackDuration);
-                                
-                                // Nur Töne neu berechnen, die in der Zukunft liegen
-                                if (t > now) {
-                                    let cY = p.y + (p.rY || 0) * 100 * newChaos; // Neues Y-Chaos anwenden
-                                    let f = mapYToFrequency(cY, 100);
-                                    if (harmonizeCheckbox.checked) f = quantizeFrequency(f, scaleSelect.value);
-                                    futurePairs.push({ t, f });
-                                }
-                            });
-                            
-                            futurePairs.sort((a, b) => a.t - b.t);
-                            futurePairs.forEach(pair => {
-                                try { osc.frequency.linearRampToValueAtTime(pair.f * Math.pow(2, iv/12), pair.t); }
-                                catch(e) { osc.frequency.setTargetAtTime(pair.f * Math.pow(2, iv/12), pair.t, 0.01); }
-                            });
-                        };
-                    }
                     
                     osc.onended = () => { const idx = activeNodes.indexOf(osc); if (idx > -1) activeNodes.splice(idx, 1); };
                     osc.start(sT); osc.stop(eT + 0.2); 
