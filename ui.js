@@ -70,19 +70,19 @@ export function resetFXUI(updateRouting) {
 const langToggleBtn = document.getElementById('langToggleBtn');
 const helpDe = document.getElementById('help-de');
 const helpEn = document.getElementById('help-en');
-let currentLang = 'de';
+let currentLang = 'en';
 
 if (langToggleBtn) {
   langToggleBtn.addEventListener('click', () => {
     if (currentLang === 'de') {
       helpDe.style.display = 'none';
       helpEn.style.display = 'block';
-      langToggleBtn.innerText = '🇩🇪 Deutsch';
+      langToggleBtn.innerText = 'Deutsch';
       currentLang = 'en';
     } else {
       helpDe.style.display = 'block';
       helpEn.style.display = 'none';
-      langToggleBtn.innerText = '🇬🇧 English';
+      langToggleBtn.innerText = 'English';
       currentLang = 'de';
     }
   });

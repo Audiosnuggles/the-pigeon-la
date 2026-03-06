@@ -54,8 +54,10 @@ function drawSegmentXenakis(ctx, pts, idx1, idx2, size) {
     ctx.strokeStyle = "#000"; 
 }
 
+// Der Rorschach/Rorbach Pinsel (Symmetrisch gespiegelt)
 function drawSegmentRorschach(ctx, pts, idx1, idx2, size) {
     ctx.lineCap = "round";
+    // Hauptlinie
     ctx.lineWidth = size;
     ctx.strokeStyle = "#000";
     ctx.beginPath();
@@ -63,11 +65,49 @@ function drawSegmentRorschach(ctx, pts, idx1, idx2, size) {
     ctx.lineTo(pts[idx2].x, pts[idx2].y);
     ctx.stroke();
 
+    // Gespiegelte Linie
     ctx.lineWidth = size;
     ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
     ctx.beginPath();
     ctx.moveTo(pts[idx1].x, 100 - pts[idx1].y);
     ctx.lineTo(pts[idx2].x, 100 - pts[idx2].y);
+    ctx.stroke();
+}
+
+function drawSegmentOvertone(ctx, pts, idx1, idx2, size) {
+    ctx.lineCap = "round";
+    // Zeichne Grundton und 4 Obertöne
+    for (let i = 1; i <= 5; i++) {
+        ctx.lineWidth = size / i; // Obertöne werden nach oben dünner
+        ctx.strokeStyle = `rgba(0, 0, 0, ${1 / i})`; // Obertöne verblassen
+        ctx.beginPath();
+        // Logarithmischer Abstand für Oktaven (f, 2f, 3f, 4f...)
+        const offset = Math.log2(i) * 20; 
+        ctx.moveTo(pts[idx1].x, pts[idx1].y - offset);
+        ctx.lineTo(pts[idx2].x, pts[idx2].y - offset);
+        ctx.stroke();
+    }
+}
+
+function drawSegmentFM(ctx, pts, idx1, idx2, size) {
+    // Trägerwelle (Dicker, transparenter "Radiostrahl")
+    ctx.lineCap = "round";
+    ctx.lineWidth = size * 2.5;
+    ctx.strokeStyle = "rgba(0, 150, 255, 0.2)"; 
+    ctx.beginPath();
+    ctx.moveTo(pts[idx1].x, pts[idx1].y);
+    ctx.lineTo(pts[idx2].x, pts[idx2].y);
+    ctx.stroke();
+
+    // Modulatorwelle (Agressiver Zickzack innerhalb der Trägerwelle)
+    ctx.lineWidth = Math.max(1, size / 2);
+    ctx.strokeStyle = "#000";
+    ctx.beginPath();
+    const side1 = (idx1 % 2 === 0) ? 1 : -1;
+    const side2 = (idx2 % 2 === 0) ? 1 : -1;
+    const fmSpread = size * 1.2;
+    ctx.moveTo(pts[idx1].x, pts[idx1].y + fmSpread * side1);
+    ctx.lineTo(pts[idx2].x, pts[idx2].y + fmSpread * side2);
     ctx.stroke();
 }
 
@@ -94,8 +134,9 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
         t.ctx.beginPath(); t.ctx.strokeStyle = "#000"; t.ctx.lineWidth = size;
         
         if(brush === "chord"){ 
-            chordIntervals[seg.chordType||"major"].forEach((iv,i) => { 
-                t.ctx.save(); t.ctx.beginPath(); t.ctx.strokeStyle = chordColors[i%3]; t.ctx.lineWidth = size; 
+            const ivs = chordIntervals[seg.chordType || "major"] || chordIntervals["major"];
+            ivs.forEach((iv,i) => { 
+                t.ctx.save(); t.ctx.beginPath(); t.ctx.strokeStyle = chordColors ? chordColors[i%3] : '#000'; t.ctx.lineWidth = size; 
                 t.ctx.moveTo(pts[0].x, pts[0].y-iv*5); for(let k=1;k<pts.length;k++) t.ctx.lineTo(pts[k].x,pts[k].y-iv*5); 
                 t.ctx.stroke(); t.ctx.restore(); 
             }); 
@@ -108,7 +149,9 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
                     case "calligraphy": drawSegmentCalligraphy(t.ctx, pts, i-1, i, size); break; 
                     case "fractal": drawSegmentFractal(t.ctx, pts, i-1, i, size, liveChaos, liveMorph); break; 			
                     case "xenakis": drawSegmentXenakis(t.ctx, pts, i-1, i, size); break;
-                    case "rorschach": drawSegmentRorschach(t.ctx, pts, i-1, i, size); break;
+                    case "rorschach": drawSegmentRorschach(t.ctx, pts, i-1, i, size); break; // Rorschach/Rorbach eingebunden
+                    case "overtone": drawSegmentOvertone(t.ctx, pts, i-1, i, size); break;
+                    case "fm": drawSegmentFM(t.ctx, pts, i-1, i, size); break;
                     default: drawSegmentStandard(t.ctx, pts, i-1, i, size); 
                 } 
             }
