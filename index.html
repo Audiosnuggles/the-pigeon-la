@@ -391,16 +391,36 @@
 
       <div class="ctrl-action-blocks">
         
-        <div class="ctrl-block">
-          <div class="ctrl-btn-row">
-            <button id="playButton" class="btn--ctrl btn--play">PLAY</button>
-            <button id="stopButton" class="btn--ctrl">STOP</button>
-            <button id="undoButton" class="btn--ctrl">UNDO</button>
+        <div class="ctrl-block" style="flex-direction: row; gap: 8px;">
+          
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <button id="playButton" class="btn--ctrl btn--play" style="display: flex; justify-content: center; align-items: center; gap: 6px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              PLAY
+            </button>
+            <button id="undoButton" class="btn--ctrl" style="padding: 0; display: flex; justify-content: center; align-items: center; gap: 6px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              UNDO
+            </button>
           </div>
-          <div class="ctrl-btn-row">
-            <button id="recButton" class="btn--ctrl btn--rec"><span class="rec-dot"></span>REC</button>
-            <button id="clearButton" class="btn--ctrl">CLEAR ALL</button>
+          
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <button id="stopButton" class="btn--ctrl" style="display: flex; justify-content: center; align-items: center; gap: 6px;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+              STOP
+            </button>
+            <button id="clearButton" class="btn--ctrl" style="display: flex; justify-content: center; align-items: center; gap: 5px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              CLEAR ALL
+            </button>
           </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <button id="recButton" class="btn--ctrl btn--rec" style="display: flex; justify-content: center; align-items: center; gap: 6px;">
+              <span class="rec-dot"></span> REC
+            </button>
+          </div>
+          
         </div>
 
         <div class="panel-divider"></div>
@@ -471,11 +491,14 @@
 
 <div id="help-overlay">
   <div class="help-content">
-    <div class="help-controls">
-      <button id="langToggleBtn">🇩🇪 Deutsch</button>
+    <div class="help-controls" style="margin-bottom: 40px; display: flex; align-items: center; gap: 15px;">
+      <div id="langLinks" style="font-weight: bold; color: var(--color-text); font-size: 14px;">
+        <span class="lang-link active" data-lang="de" style="cursor: pointer;">DE</span> <span style="opacity: 0.5;">|</span> 
+        <span class="lang-link" data-lang="en" style="cursor: pointer; opacity: 0.5;">EN</span> <span style="opacity: 0.5;">|</span> 
+        <span class="lang-link" data-lang="fr" style="cursor: pointer; opacity: 0.5;">FR</span>
+      </div>
       <button id="closeHelpBtn">X</button>
     </div>
-
 
     <div id="help-de">
       <h2>Graphic Synthesis Sequencer</h2>
@@ -532,7 +555,7 @@
             <li><strong>Xenakids (Swarm):</strong> Unkorrelierte Phasenmodulation. Zeichnet fünf Linien, deren Tonhöhen durch LFO-Algorithmen gegeneinander verstimmt werden, was schwebende Dissonanz-Cluster erzeugt.</li>
             <li><strong>Rorbach (Rorschach):</strong> Achsensymmetrischer Kontrapunkt. Reflektiert den gezeichneten Vektor an der horizontalen Mittelachse und berechnet die strikt invertierten Frequenzen für algorithmische Zweistimmigkeit.</li>
             <li><strong>Overtone:</strong> Additive Spektralsynthese. Erweitert den Grundton um logarithmisch angeordnete, phasenstarre Partialtöne ($2f, 3f, 4f...$) zur Erzeugung glocken- oder orgelartiger Klangspektren.</li>
-            <li><strong>DX7 (FM):</strong> Frequenzmodulation nach John Chowning. Zeichnet eine sichtbare Trägerwelle (Carrier), moduliert durch eine zweite Welle. Die gezeichnete Pinsel-Dicke steuert den Modulationsindex.</li>
+            <li><strong>DX7 (FM):</strong> Frequenzmodulation nach John Chowning. Zeichnet eine sichtbare Trägerwelle (Carrier), moduliert durch une zweite Welle. Die gezeichnete Pinsel-Dicke steuert den Modulationsindex.</li>
             <li style="break-inside: avoid;"><strong>Fractal:</strong> Destabilisierter Synthesizer.<br><em>DSP-Steuerung via "FRACTAL" Rack:</em><br>→ <strong>CHAOS:</strong> Injiziert Rausch-Jitter in die Y-Matrix, was die Grundfrequenz stochastisch zerrüttet.<br>→ <strong>MORPH:</strong> Aktiviert eine nicht-lineare Transferfunktion (WaveShaper). Erzeugt extreme harmonische Verzerrung (Wavefolding) und visualisiert das Signal-Clipping rot.</li>
           </ul>
         </div>
@@ -550,7 +573,7 @@
       </div>
     </div>
 
-    <div id="help-en">
+    <div id="help-en" style="display: none;">
       <h2>Graphic Synthesis Sequencer</h2>
       <div class="help-grid-expanded">
         <div class="help-section">
@@ -618,6 +641,79 @@
             <li><strong>Export WAV:</strong> Iteratively renders the audio buffer offline, providing a mathematically flawless PCM audio file.</li>
             <li><strong>Live REC:</strong> Records the master bus output directly to a downloadable file.</li>
             <li><strong>Import/Export:</strong> Serializes the entire session (JSON) for later recall.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div id="help-fr" style="display: none;">
+      <h2>Séquenceur de Synthèse Graphique</h2>
+      <div class="help-grid-expanded">
+        <div class="help-section">
+          <h3>1. Initialisation & Dessin</h3>
+          <ul>
+            <li><strong>Assignation de Pattern :</strong> Sélectionnez une cellule vide dans la <em>Pattern Bank</em> (en bas à droite) pour initialiser une nouvelle séquence.</li>
+            <li><strong>Entrée Graphique :</strong> L'axe X représente le temps ($t$), l'axe Y la fréquence fondamentale ($f_0$). Dessinez des vecteurs sur la toile (canvas).</li>
+            <li><strong>Outils :</strong> Basculez entre <em>Draw</em> (insertion de vecteurs) et <em>Erase</em> (suppression de vecteurs).</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>2. Architecture des Pistes</h3>
+          <ul>
+            <li><strong>Formes d'Onde :</strong> Définit le spectre harmonique. <strong>∿</strong> (Sinusoïde/Fondamentale), <strong>⊓</strong> (Carrée/Harmoniques impaires), <strong>∧</strong> (Dents de scie/Toutes harmoniques).</li>
+            <li><strong>Snap (Quantification) :</strong> Force la synchronisation temporelle absolue en alignant les coordonnées X sur une grille.</li>
+            <li><strong>Routage :</strong> Utilisez <em>Solo/Mute</em> pour isoler le signal audio et les curseurs (sliders) pour la mise à l'échelle de l'amplitude.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>3. Interaction Performative</h3>
+          <ul>
+            <li><strong>Poke Me Pad :</strong> Interface tactile en temps réel. Déclenche des allocations de fréquences instantanées sur la piste ciblée.</li>
+            <li><strong>Matrice d'Effets (FX) :</strong> Cliquez sur les indicateurs de couleur des pistes pour router le signal audio vers des modules DSP dédiés (Délai, Réverbération, Filtre, etc.).</li>
+            <li><strong>Lien X/Y (Link) :</strong> Convertit le pad en un macro-contrôleur interpolant de manière algorithmique les paramètres du moteur d'effets.</li>
+          </ul>
+        </div>
+        <div class="help-section">
+          <h3>4. Horloge & Macro-Structure</h3>
+          <ul>
+            <li><strong>Transport :</strong> Démarre ou arrête la boucle de lecture globale (Raccourci : <em>Barre d'espace</em>).</li>
+            <li><strong>Harmoniser :</strong> Correction algorithmique de la hauteur. Contraint toutes les coordonnées Y sur des échelles musicales prédéfinies.</li>
+            <li><strong>EXT SYNC (Configuration DAW) :</strong> Synchronise le séquenceur interne avec votre STAN (DAW).
+              <ol style="margin-top: 8px; padding-left: 20px; font-size: 0.9em;">
+                <li>Créez un port MIDI virtuel (Mac : <em>Pilote IAC</em>, Win : <em>loopMIDI</em>).</li>
+                <li>Dans Ableton, allez dans <em>Préférences -> Link/Tempo/MIDI</em>.</li>
+                <li>Activez <strong>Sync</strong> sur la sortie (<em>Output</em>) de votre port MIDI virtuel.</li>
+                <li>Sélectionnez ce port dans le menu déroulant de The Pigeon et cliquez sur <strong>EXT SYNC</strong>.</li>
+                <li>Appuyez sur Play dans Ableton – The Pigeon démarrera de manière synchrone !</li>
+              </ol>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="help-section" style="grid-column: 1 / -1;">
+          <h3>5. Outils de Synthèse Géométrique (Brushes)</h3>
+          <ul style="column-count: 2; column-gap: 40px; font-size: 0.9em;">
+            <li><strong>Standard :</strong> Oscillateur de phase continu. Traduit les vecteurs en glissements de fréquence fluides (Portamento parfait).</li>
+            <li><strong>Pressure :</strong> Tracé dépendant de la vélocité. Simule la pression physique en analysant la distance vectorielle de la souris.</li>
+            <li><strong>Calligraphy :</strong> Géométrie déterminée par l'angle. Génère des bandes d'amplitude statiques inspirées de la notation graphique historique.</li>
+            <li><strong>Particles :</strong> Micro-montage stochastique (Synthèse Granulaire). Désintègre la courbe en grains asynchrones de quelques millisecondes (nuages sonores).</li>
+            <li><strong>Chord :</strong> Multiplication harmonique de fréquence. Génère des oscillateurs parallèles verrouillés sur des ratios musicaux stricts (intervalles).</li>
+            <li><strong>Xenakids (Swarm) :</strong> Modulation de phase non corrélée. Dessine cinq lignes parallèles dont les hauteurs sont désaccordées par des LFO, générant des clusters dissonants.</li>
+            <li><strong>Rorbach (Rorschach) :</strong> Contrepoint à symétrie axiale. Reflète le vecteur dessiné sur l'axe central horizontal, calculant des fréquences inversées (polyphonie algorithmique).</li>
+            <li><strong>Overtone :</strong> Synthèse Spectrale Additive. Étend la fréquence fondamentale avec des partiels superposés de manière logarithmique ($2f, 3f, 4f...$) pour des spectres d'orgue ou de cloche.</li>
+            <li><strong>DX7 (FM) :</strong> Modulation de Fréquence (méthode de John Chowning). Dessine une onde porteuse (Carrier) visible modulée par une seconde onde. L'épaisseur du pinceau contrôle l'indice de modulation.</li>
+            <li style="break-inside: avoid;"><strong>Fractal :</strong> Synthétiseur déstabilisé.<br><em>Contrôle DSP via le module "FRACTAL" :</em><br>→ <strong>CHAOS :</strong> Injecte un bruit de phase (noise-jitter) provoquant un brouillage microtonal.<br>→ <strong>MORPH :</strong> Active un formateur d'onde (WaveShaper). Induit une distorsion extrême (Wavefolding) et met en évidence l'écrêtage (clipping) en rouge.</li>
+          </ul>
+        </div>
+
+        <div class="help-section" style="grid-column: 1 / -1; border-top: 1px solid var(--color-border-btn); padding-top: 15px;">
+          <h3>6. Sérialisation & Rendu</h3>
+          <ul style="column-count: 2; column-gap: 40px;">
+            <li><strong>SAVE :</strong> Enregistre l'état actuel de toutes les matrices vectorielles sur un pad de la banque.</li>
+            <li><strong>Live Arrangement :</strong> Basculez séquentiellement entre les banques de mémoire en temps réel sans interruption de phase.</li>
+            <li><strong>Export WAV :</strong> Fait le rendu du tampon audio hors ligne, fournissant un fichier audio PCM mathématiquement sans perte.</li>
+            <li><strong>Live REC :</strong> Enregistre directement la sortie du bus principal dans un fichier WAV.</li>
+            <li><strong>Import/Export :</strong> Sérialise la session entière (JSON) pour un rappel ultérieur.</li>
           </ul>
         </div>
       </div>
