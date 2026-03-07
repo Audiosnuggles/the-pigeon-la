@@ -1,5 +1,5 @@
 /* ============================================================
-   THE PIGEON – Audio Sequencer UI  (v6 Fixes)
+   THE PIGEON – Audio Sequencer UI
    ============================================================ */
 
 /* ============================================================
@@ -83,7 +83,7 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 ═══════════════════════════════════════ */
 .header {
   display: flex; 
-  align-items: center; /* HIER GEÄNDERT: Zentriert Titel und Logo/Taube vertikal */
+  align-items: center; 
   justify-content: space-between; 
   padding: 14px 16px 8px 16px;
 }
@@ -92,8 +92,8 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
   display: flex; 
   flex-direction: column; 
   gap: 0; 
-  margin-left: 0px; /* NEU: Schiebt den Text nach rechts, genau bündig mit den Farbbalken */
-  margin-top: -9px; /* hoch */
+  margin-left: 0px; 
+  margin-top: -9px; 
 }
 
 .header__title { 
@@ -101,10 +101,9 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
   font-size: 26px; 
   line-height: 1.1; 
   font-weight: normal; 
-  color: #4A4949; /* Das dunkle, weiche Schwarz */
+  color: #4A4949; 
   margin: 0; 
 }
-
 
 .title-line { display: block; }
 
@@ -117,15 +116,12 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 .header__logo-icon {
   width: 0px; 
   height: auto;
-  margin-top: 10px; /* NEU: Schiebt das SVG-Logo ein paar Pixel nach unten */
+  margin-top: 10px; 
 }
 
 #pigeon { 
   width: 75px;
-  
-  /* Zieht die Taube über das 8px Header-Padding exakt auf die Linie: */
   margin-bottom: -13px; 
-  
   display: block;
   vertical-align: bottom; 
   opacity: 0.8; 
@@ -159,34 +155,29 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 .track__canvas { display: block; width: 100%; height: 100%; }
 
 /* ═══════════════════════════════════════
-   TRACK SIDE CONTROLS (Vertikal & Platzsparend)
+   TRACK SIDE CONTROLS
 ═══════════════════════════════════════ */
 .track__side { 
   display: flex; 
-  flex-direction: column;     /* Wieder klassisch untereinander */
+  flex-direction: column; 
   align-items: center; 
   justify-content: center; 
   padding: 0 15px; 
   flex-shrink: 0; 
-  gap: 10px;                  /* Abstand zwischen den 3 Reihen */
+  gap: 10px; 
   height: 101px; 
-  min-width: 85px;            /* Nimmt kaum Platz vom Canvas weg */
+  min-width: 85px; 
   box-sizing: border-box;
 }
 
-/* Reihe 1: Solo und Mute nebeneinander */
-.track__control-row {
-  display: flex;
-  gap: 12px;                  /* Abstand zwischen Solo und Mute */
-}
+.track__control-row { display: flex; gap: 12px; }
 
-/* Ein einzelner Block (Element oben, Label unten) */
 .track__control-block {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;                   /* Enger Abstand zwischen Button/Slider und Label */
+  gap: 4px; 
 }
 
 .track__control-label {
@@ -199,43 +190,21 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
   line-height: 1;
 }
 
-/* BUTTONS */
 .btn--solo, .btn--mute { width: 20px; height: 20px; background: var(--color-dark-gray); border: 1px solid var(--color-border); border-radius: var(--radius-md); transition: background .12s; color: white; font-size: 10px; font-weight: bold; cursor: pointer; }
 .btn--solo.active { background: var(--color-blue); }
 .btn--mute.active { background: var(--color-red); }
 
-/* VOLUME & LED */
 .track__vol-wrapper { display: flex; align-items: center; gap: 8px; flex-direction: row; }
-/* LED: Grundzustand (Grün) */
-.clipping-led { 
-  width: 6px; 
-  height: 6px; 
-  background: #00cc00; 
-  border-radius: 1px; 
-  box-shadow: inset 0 0 2px rgba(0,0,0,0.4); 
-  transition: background 0.05s, box-shadow 0.05s; 
-}
-
-/* LED: Warn-Zustand (Orange - Pegel ist hoch) */
-.clipping-led.warning {
-  background: #ff9900 !important; /* Kräftiges Orange */
-  box-shadow: 0 0 6px #ff9900;
-}
-
-/* LED: Clipping Zustand (Rot - Übersteuerung!) */
-.clipping-led.peak { 
-  background: #ff0000 !important; 
-  box-shadow: 0 0 8px #ff0000; 
-}
+.clipping-led { width: 6px; height: 6px; background: #00cc00; border-radius: 1px; box-shadow: inset 0 0 2px rgba(0,0,0,0.4); transition: background 0.05s, box-shadow 0.05s; }
+.clipping-led.warning { background: #ff9900 !important; box-shadow: 0 0 6px #ff9900; }
+.clipping-led.peak { background: #ff0000 !important; box-shadow: 0 0 8px #ff0000; }
 
 .slider { -webkit-appearance: none; appearance: none; width: 50px; height: 7px; border-radius: 3.5px; background: var(--color-light-gray); border: 1px solid var(--color-medium-gray); outline: none; cursor: pointer; }
 .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--color-blue); border: 1px solid var(--color-medium-gray); }
 
-/* SNAP */
 .snap-checkbox { display: none; }
 .snap-box { display: inline-block; width: 14px; height: 14px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: #fff; cursor: pointer; transition: background .12s; }
 .snap-checkbox:checked + .snap-box { background: var(--color-pink); border-color: var(--color-pink); }
-
 
 /* ═══════════════════════════════════════
    TOOLS + PERFORMANCE PANEL
@@ -245,31 +214,18 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
   background: var(--color-bg-main); padding: 12px 16px; gap: 16px;
 }
 
-.tools-perf-wrapper {
-  display: flex; flex-direction: row; gap: 16px; flex-shrink: 0;
-}
-
+.tools-perf-wrapper { display: flex; flex-direction: row; gap: 16px; flex-shrink: 0; }
 .tools-col, .perf-col { display: flex; flex-direction: column; }
 
 .tools-col { width: 130px; }
 .perf-col { width: 44px; }
 
-.panel-divider {
-  width: 1px;
-  background: #a5a5a5;
-  margin: 0;
-  align-self: stretch;
-}
+.panel-divider { width: 1px; background: #a5a5a5; margin: 0; align-self: stretch; }
 
 .block-label { font-size: 12px; font-weight: bold; color: var(--color-dark-gray); margin-bottom: 8px; line-height: 1; }
 
-.tools-rows-wrapper {
-  display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; flex: 1;
-}
-
-.perf-buttons {
-  display: flex; flex-direction: column; gap: 6px; justify-content: space-between; flex: 1;
-}
+.tools-rows-wrapper { display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; flex: 1; }
+.perf-buttons { display: flex; flex-direction: column; gap: 6px; justify-content: space-between; flex: 1; }
 
 .select-btn {
   display: flex; align-items: center; justify-content: space-between; height: 24px; background: var(--color-bg-button);
@@ -288,36 +244,22 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 .track-swatch-btn.swatch-sm--yellow.active { background: var(--color-yellow); color: #fff; border-color: var(--color-yellow); box-shadow: inset -2px 2px 4px rgba(0,0,0,.25); }
 .track-swatch-btn.swatch-sm--green.active  { background: var(--color-green); color: #fff; border-color: var(--color-green); box-shadow: inset -2px 2px 4px rgba(0,0,0,.25); }
 
-/* Poke Grid */
 .poke-grid-outer {
   position: relative; display: flex; align-items: center; justify-content: center; 
   background: #fff; border: 1px solid #d1d1d1; border-radius: var(--radius-md); 
-  padding: 10px; flex-shrink: 0;
-  width: 152px;
-  height: 152px;
-  align-self: center; 
-  cursor: crosshair;
-  
-  /* NEU: Der Inner Shadow für den eingelassenen 3D-Effekt */
+  padding: 10px; flex-shrink: 0; width: 152px; height: 152px; align-self: center; cursor: crosshair;
   box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.3);
-  
   background-image: linear-gradient(#eaeaea 1px, transparent 1px), linear-gradient(90deg, #eaeaea 1px, transparent 1px), linear-gradient(#bbb 1px, transparent 1px), linear-gradient(90deg, #bbb 1px, transparent 1px);
-  background-size: 15px 15px, 15px 15px, 75px 75px, 75px 75px; 
-  background-position: center center;
+  background-size: 15px 15px, 15px 15px, 75px 75px, 75px 75px; background-position: center center;
 }
 .poke-label { position: absolute; font-size: 24px; font-weight: 900; color: #d1d1d1; letter-spacing: 2px; text-align: center; line-height: 1.15; pointer-events: none; user-select: none; }
 
 /* ═══════════════════════════════════════
    FX AREA 
 ═══════════════════════════════════════ */
-.fx-area { 
-  flex: 1; 
-  display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 6px; min-width: 0; 
-}
-
+.fx-area { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 6px; min-width: 0; }
 .fx-mod { background: #fff; border: 1px solid #d1d1d1; border-radius: var(--radius-md); padding: 6px 8px 6px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .fx-mod--disabled { opacity: 0.4; transition: all 0.3s ease;}
-
 .fx-mod__head { display: flex; align-items: center; justify-content: space-between; }
 .fx-mod__name { font-size: 9px; font-weight: bold; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-dark-gray); }
 .fx-power { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--color-border); background: transparent; }
@@ -326,51 +268,15 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 .fx-mod__body { display: flex; align-items: center; gap: 6px; flex: 1; }
 .fx-track-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; flex-shrink: 0; width: 28px; height: 28px; }
 
-.fx-track-dot { 
-  border-radius: var(--radius-md); /* NEU: Quadratisch mit leicht abgerundeten Ecken */
-  border: none; /* Kein Rand mehr */
-  cursor: pointer; 
-  padding: 0; 
-  opacity: 0.25; /* NEU: Leicht transparent im inaktiven Zustand */
-  transition: all .12s; 
-}
-
-.fx-track-dot.active { 
-  opacity: 1; /* NEU: Volle Leuchtkraft, wenn aktiv */
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); /* Ein feiner Schatten nach innen für den perfekten Look */
-}
-
-/* NEU: Farben sind jetzt immer zugewiesen, nicht nur bei .active */
+.fx-track-dot { border-radius: var(--radius-md); border: none; cursor: pointer; padding: 0; opacity: 0.25; transition: all .12s; }
+.fx-track-dot.active { opacity: 1; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .fx-track-dot--pink   { background: var(--color-pink); }
 .fx-track-dot--cyan   { background: var(--color-cyan); }
 .fx-track-dot--yellow { background: var(--color-yellow); }
 .fx-track-dot--green  { background: var(--color-green); }
 
-/* X/Y Link Buttons (Quadratisch, Hellgrau & Leuchtend) */
-.btn--xy {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px; 
-  background: var(--color-light-gray); /* Helles Grau wie bei den Wave-Buttons */
-  border: 1px solid var(--color-border);
-  color: var(--color-dark-gray);       /* Dunkle Schrift für guten Kontrast */
-  font-size: 9px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 8px auto; 
-}
-
-/* Der leuchtende Aktiv-Zustand bleibt wie vorher */
-.btn--xy.active {
-  background: var(--color-blue);
-  color: #fff;
-  border-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 150, 255, 0.6); 
-}
+.btn--xy { width: 28px; height: 28px; border-radius: 4px; background: var(--color-light-gray); border: 1px solid var(--color-border); color: var(--color-dark-gray); font-size: 9px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; }
+.btn--xy.active { background: var(--color-blue); color: #fff; border-color: #fff; box-shadow: 0 0 10px rgba(0, 150, 255, 0.6); }
 
 .fx-knobs { display: flex; gap: 6px; align-items: flex-end; margin-left: auto; }
 .knob-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -384,31 +290,25 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 .control-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 0; background: var(--color-bg-control); box-shadow: inset 0px 4px 16px 0px rgba(0,0,0,0.25); padding: 14px 16px 18px; }
 .control-bar__left { display: flex; flex-direction: column; gap: 14px; flex: 1; }
 .control-bar__label { font-size: 14.5px; font-weight: bold; color: var(--color-dark-gray); margin-right: 10px; }
-
 .ctrl-top-row { display: flex; align-items: center; justify-content: flex-start; gap: 10px; height: 24px; }
 .ctrl-meta-right { display: flex; align-items: center; gap: 16px; height: 24px; }
-
 .ctrl-action-blocks { display: flex; align-items: flex-start; gap: 32px; margin-top: -2px; } 
 .ctrl-block { display: flex; flex-direction: column; gap: 6px; width: auto; } 
-.ctrl-btn-row { display: flex; align-items: center; gap: 8px; min-height: 36px;; } 
+.ctrl-btn-row { display: flex; align-items: center; gap: 8px; min-height: 36px; } 
 
 .btn--ctrl { background: var(--color-bg-button); border: 1px solid var(--color-border-btn); border-radius: var(--radius-sm); height: 34px; padding: 0 16px; font-size: 11.5px; font-family: 'JetBrainsMono[wght]', sans-serif; color: #292929; white-space: nowrap; transition: background .12s; }
 .btn--ctrl:hover { background: #e8e8e8; }
-
 .btn--play, .btn--rec { width: 78px; padding: 0; display: flex; align-items: center; justify-content: center; }
 .btn--rec { gap: 6px; }
 .rec-dot { width: 8px; height: 9px; border-radius: 50%; background: #ff0000; flex-shrink: 0; }
-
 .btn--ext-sync { background: var(--color-dark-gray); color: #ececec; border: 1px solid var(--color-border-btn); border-radius: 12px; padding: 0 14px; font-size: 11.5px; font-family: 'JetBrainsMono[wght]', sans-serif; height: 34px; display: flex; align-items: center; justify-content: center; white-space: nowrap; width: 100%; transition: all .12s; }
 .btn--ext-sync.active { background-color: #ff9900; color: #fff; box-shadow: 0 0 8px #ff9900; border-color: #cc7a00; }
 
 .tempo-wrap { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #292929; }
 .tempo-box { background: var(--color-bg-button); border: 1px solid var(--color-border-btn); border-radius: var(--radius-sm); padding: 0 4px; font-size: 11.5px; font-family: 'JetBrainsMono[wght]', sans-serif; width: 50px; height: 22px; color: #292929; outline: none; text-align: center; }
-
 .toggle-wrap { display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: #292929; cursor: pointer; }
 .toggle-sq { width: 16px; height: 16px; background: transparent; border: 1px solid var(--color-border-btn); border-radius: var(--radius-sm); flex-shrink: 0; transition: background 0.15s; }
 #loopCheckbox:checked + .toggle-ui, #harmonizeCheckbox:checked + .toggle-ui { background: var(--color-pink); }
-
 .btn--help { width: 34px; height: 34px; background: var(--color-help); color: #1f1f1f; border: none; border-radius: 17px; font-size: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; margin-left: 8px; transition: background 0.1s; }
 .btn--help:hover { background: #d0f050; }
 
@@ -421,32 +321,15 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 
 .btn--save { display: flex; align-items: center; gap: 4px; width: 51px; height: 20px; background: var(--color-bg-button); border: 1px solid var(--color-border-tool); border-radius: var(--radius-sm); font-size: 11.5px; color: var(--color-dark-gray); padding: 0 5px; }
 .btn--save-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--color-border-tool); flex-shrink: 0; display: inline-block; }
-.btn--save.active { 
-  background: var(--color-red); 
-  color: #fff; 
-  border-color: var(--color-red); 
-  animation: fastPulse 0.4s infinite; 
-}
-
-.btn--save.active .btn--save-dot { 
-  background: #fff; 
-}
+.btn--save.active { background: var(--color-red); color: #fff; border-color: var(--color-red); animation: fastPulse 0.4s infinite; }
+.btn--save.active .btn--save-dot { background: #fff; }
 
 .pattern-grid { display: grid; grid-template-columns: 16px repeat(4, 33px); grid-template-rows: repeat(3, 33px); gap: 4px; align-items: center; }
 .pat-row-lbl { font-size: 14.5px; color: var(--color-dark-gray); text-align: right; padding-right: 2px; line-height: 1; }
-.pat-btn { 
-  width: 33px; 
-  height: 33px; 
-  border: 1px solid var(--color-border); 
-  border-radius: var(--radius-md); 
-  transition: filter .1s; 
-  position: relative; /* WICHTIG: Damit der Punkt genau in der Mitte zentriert werden kann */
-}
+.pat-btn { width: 33px; height: 33px; border: 1px solid var(--color-border); border-radius: var(--radius-md); transition: filter .1s; position: relative; }
 .pat-btn:hover { filter: brightness(1.08); }
-
 .pad { background: #929191; }
 .pad.filled { background: #b8b8b8; }
-
 .pad.active { background: var(--color-pink); box-shadow: 0 0 0 2px #fff inset; }
 .pad.queued { background: var(--color-green); animation: fastPulse 0.3s infinite; }
 
@@ -466,62 +349,67 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 
 .help-content h2 { 
   margin-top: 0; 
-  font-family: 'JetBrainsMono[wght]', sans-serif; /* Deine Custom Font */
+  font-family: 'JetBrainsMono[wght]', sans-serif; 
   font-weight: normal; 
   color: #1a1a1a; 
   text-align: center; 
   border-bottom: 1px solid #d1d1d1; 
-  padding-bottom: 25px; 
+  padding-bottom: 20px; 
   margin-bottom: 30px;
-  font-size: 36px; 
+  font-size: 26px; /* Kleiner als vorher */
   letter-spacing: 0.5px;
 }
 
+/* Menü-Steuerung (NICHT MEHR absolute positioniert) */
 .help-controls {
-  position: absolute; top: 25px; right: 25px; display: flex; gap: 10px; align-items: center;
+  display: flex; 
+  justify-content: flex-end; 
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 40px; /* Erzeugt den benötigten Abstand nach unten */
+}
+
+#langLinks {
+  font-weight: bold; 
+  color: #555; 
+  font-size: 14px;
+}
+
+.lang-divider {
+  opacity: 0.4;
+  margin: 0 4px;
+  cursor: default;
+}
+
+.lang-link {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.lang-link.active {
+  opacity: 1 !important;
+  color: var(--color-dark-gray);
+}
+
+.lang-link:hover {
+  opacity: 1 !important;
+  color: var(--color-red);
 }
 
 #closeHelpBtn { 
-  position: static; background: #e8e8e8; color: #1a1a1a; border: 1px solid #ccc; 
+  background: #e8e8e8; color: #1a1a1a; border: 1px solid #ccc; 
   width: 32px; height: 32px; border-radius: 50%; cursor: pointer; 
   font-family: 'JetBrainsMono[wght]', sans-serif; font-weight: bold; font-size: 13px; display: flex; 
   justify-content: center; align-items: center; transition: all 0.1s; 
 }
-#closeHelpBtn:hover { 
-  background: var(--color-red); color: white; border-color: var(--color-red); 
-}
+#closeHelpBtn:hover { background: var(--color-red); color: white; border-color: var(--color-red); }
 
-#langToggleBtn {
-  background: #e8e8e8; color: #1a1a1a; border: 1px solid #ccc; height: 32px; 
-  border-radius: 16px; padding: 0 16px; cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; 
-  font-weight: bold; font-size: 11.5px; transition: all 0.1s; text-transform: uppercase;
-}
-#langToggleBtn:hover {
-  background: var(--color-blue); color: white; border-color: var(--color-blue);
-}
-
-.help-grid-expanded { 
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; 
-}
-
-.help-section { 
-  background: #fff; padding: 24px; border-radius: 6px; border: 1px solid #d1d1d1; 
-}
-
-.help-section h3 { 
-  font-family: 'JetBrainsMono[wght]', sans-serif; font-size: 12.5px; color: #666; border-bottom: 1px solid #eee; 
-  padding-bottom: 10px; margin-top: 0; margin-bottom: 15px; font-weight: bold; 
-  text-transform: uppercase; letter-spacing: 1px;
-}
-
-.help-section ul { 
-  padding-left: 18px; margin: 0; 
-}
-
-.help-section li { 
-  font-family: 'JetBrainsMono[wght]', sans-serif; font-size: 13px; color: #333; line-height: 1.6; margin-bottom: 12px; 
-}
-
+.help-grid-expanded { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.help-section { background: #fff; padding: 24px; border-radius: 6px; border: 1px solid #d1d1d1; }
+.help-section h3 { font-family: 'JetBrainsMono[wght]', sans-serif; font-size: 12.5px; color: #666; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-top: 0; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+.help-section ul { padding-left: 18px; margin: 0; }
+.help-section li { font-family: 'JetBrainsMono[wght]', sans-serif; font-size: 13px; color: #333; line-height: 1.6; margin-bottom: 12px; }
 .help-section li:last-child { margin-bottom: 0; }
 .help-section strong { color: #1a1a1a; font-weight: bold; }
 
@@ -529,23 +417,12 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
    DOM ERASER (Original Pigeon 3)
    ========================================= */
 #custom-eraser {
-  position: fixed; 
-  pointer-events: none; 
-  z-index: 9999999; 
-  width: 32px; 
-  height: 32px;
+  position: fixed; pointer-events: none; z-index: 9999999; width: 32px; height: 32px;
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path d="M13.5 3L21 10.5L14.5 17L7 9.5L13.5 3Z" fill="%23f2f2f2" stroke="black" stroke-width="1.5"/><path d="M7 9.5L14.5 17L9 22L1.5 14.5L7 9.5Z" fill="%23ff7eb3" stroke="black" stroke-width="1.5"/></svg>');
-  background-size: contain; 
-  background-repeat: no-repeat; 
-  display: none; 
-  transform: translate(-5px, -27px); 
+  background-size: contain; background-repeat: no-repeat; display: none; transform: translate(-5px, -27px); 
 }
-
 body.eraser-mode #custom-eraser { display: block; }
-
-body.eraser-mode, body.eraser-mode canvas {
-  cursor: none !important;
-}
+body.eraser-mode, body.eraser-mode canvas { cursor: none !important; }
 
 /* =========================================
    ANIMATIONS
@@ -556,9 +433,4 @@ body.eraser-mode, body.eraser-mode canvas {
   100% { filter: brightness(1); }
 }
 
-/* Import und Export Buttons exakt gleich breit machen */
-#importButton, #exportButton {
-  width: 96px;
-  text-align: center;
-  padding: 0; /* Überschreibt das Standard-Padding für perfekte Zentrierung */
-}
+#importButton, #exportButton { width: 96px; text-align: center; padding: 0; }
