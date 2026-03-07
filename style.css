@@ -434,3 +434,8 @@ body.eraser-mode, body.eraser-mode canvas { cursor: none !important; }
 }
 
 #importButton, #exportButton { width: 96px; text-align: center; padding: 0; }
+
+/* Custom Cursor für das neue MOVE Tool */
+body.select-mode .track__canvas {
+  cursor: move !important;
+}

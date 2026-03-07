@@ -16,6 +16,10 @@ let activeWaveShapers = [];
 let lastParticleTime = 0; 
 let liveShaper = null, liveCompGain = null;
 
+// Copy/Paste, Selection und Alt-Drag States
+let clipboardSegments = [];
+let activeTrack = null;
+
 const workerCode = `
   let timerID = null;
   self.onmessage = function(e) {
@@ -44,10 +48,12 @@ const toolSelect = document.getElementById("toolSelect"),
 
 const tracks = Array.from(document.querySelectorAll(".track-container")).map((c, i) => ({
     index: i, canvas: c.querySelector("canvas"), ctx: c.querySelector("canvas").getContext("2d"),
-    segments: [], wave: "sine", mute: false, solo: false, vol: 0.8, snap: false, gainNode: null, curSeg: null
+    segments: [], wave: "sine", mute: false, solo: false, vol: 0.8, snap: false, gainNode: null, curSeg: null,
+    selectedSegments: [], selectionBox: null 
 }));
 
 document.addEventListener("DOMContentLoaded", () => {
+    activeTrack = tracks[0];
     tracks.forEach(t => { drawGrid(t); setupTrackControls(t); setupDrawing(t); });
     loadInitialData();
     setupFX();
@@ -56,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupTracePad();
     resetFXUI(updateRoutingFromUI);
     document.body.classList.toggle("eraser-mode", toolSelect.value === "erase");
+    document.body.classList.toggle("select-mode", toolSelect.value === "select");
 });
 
 function getPos(e, c) {
@@ -133,21 +140,72 @@ function audioBufferToWav(buffer) {
     return new Blob([bufferArray], { type: "audio/wav" });
 }
 
+// KEYBOARD SHORTCUTS (inkl. COPY / PASTE / DELETE)
 window.addEventListener("keydown", (e) => {
+    // Wenn der User in ein Eingabefeld tippt, ignorieren wir die Tasten
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+    
+    // Space = Play/Stop
     if (e.code === "Space") {
         e.preventDefault(); 
         if (isPlaying) document.getElementById("stopButton").click();
         else document.getElementById("playButton").click();
     }
+    
+    // CMD/CTRL + Z = Undo
     if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         document.getElementById("undoButton").click();
+    }
+    
+    // CMD/CTRL + C = Copy
+    if ((e.metaKey || e.ctrlKey) && e.key === "c") {
+        if (activeTrack && activeTrack.selectedSegments && activeTrack.selectedSegments.length > 0) {
+            clipboardSegments = JSON.parse(JSON.stringify(activeTrack.selectedSegments));
+        }
+    }
+    
+    // CMD/CTRL + V = Paste
+    if ((e.metaKey || e.ctrlKey) && e.key === "v") {
+        if (activeTrack && clipboardSegments.length > 0) {
+            saveState();
+            const pasted = JSON.parse(JSON.stringify(clipboardSegments));
+            pasted.forEach(seg => {
+                seg.points.forEach(p => { p.x += 15; p.y += 15; }); // Leicht verschoben einfügen
+                activeTrack.segments.push(seg);
+            });
+            activeTrack.selectedSegments = pasted; 
+            redrawTrack(activeTrack, undefined, brushSelect.value, chordIntervals, chordColors);
+        }
+    }
+    
+    // Backspace / Delete = Delete Selected
+    if (e.key === "Backspace" || e.key === "Delete") {
+        let deletedSomething = false;
+        
+        // Wir schauen in allen Tracks nach, ob etwas ausgewählt ist, und löschen es
+        tracks.forEach(t => {
+            if (t.selectedSegments && t.selectedSegments.length > 0) {
+                if (!deletedSomething) {
+                    saveState(); // Nur einmal den Undo-State speichern
+                    deletedSomething = true;
+                }
+                t.segments = t.segments.filter(s => !t.selectedSegments.includes(s));
+                t.selectedSegments = []; // Auswahl nach dem Löschen leeren
+                redrawTrack(t, undefined, brushSelect.value, chordIntervals, chordColors);
+            }
+        });
+        
+        // Wenn wirklich etwas gelöscht wurde, blockieren wir die Zurück-Navigation des Browsers
+        if (deletedSomething) {
+            e.preventDefault();
+        }
     }
 });
 
 toolSelect.addEventListener("change", (e) => {
     document.body.classList.toggle("eraser-mode", e.target.value === "erase");
+    document.body.classList.toggle("select-mode", e.target.value === "select");
 });
 
 function updateFractalFxUI() {
@@ -160,7 +218,6 @@ function updateFractalFxUI() {
             unit.style.boxShadow = isFractal ? "0 0 15px rgba(255, 68, 68, 0.15)" : "none"; 
             unit.style.borderColor = isFractal ? "#ff4444" : "#333"; 
             header.style.color = isFractal ? "#ff4444" : "#666";
-            
             const knobs = unit.querySelectorAll('.knob-container');
             knobs.forEach(k => k.style.opacity = isFractal ? "1" : "0.5");
         }
@@ -198,30 +255,11 @@ function applyAllVolumes() {
 
 function applyAllFXFromUI() {
     if (!audioCtx) return;
-    
-    if (fxNodes.delay) {
-        fxNodes.delay.node.delayTime.value = getKnobVal("DELAY", "TIME") * 1.0;
-        fxNodes.delay.feedback.gain.value = getKnobVal("DELAY", "FDBK") * 0.9;
-    }
-    if (fxNodes.reverb) {
-        fxNodes.reverb.mix.gain.value = getKnobVal("REVERB", "MIX") * 1.5;
-        updateReverbDecay(getKnobVal("REVERB", "DECAY")); 
-    }
-    if (fxNodes.vibrato) {
-        fxNodes.vibrato.lfo.frequency.value = getKnobVal("VIBRATO", "RATE") * 20;
-        fxNodes.vibrato.depthNode.gain.value = getKnobVal("VIBRATO", "DEPTH") * 0.01;
-    }
-    if (fxNodes.filter && fxNodes.filter.node1) {
-        const valF = getKnobVal("FILTER", "FREQ");
-        const valR = getKnobVal("FILTER", "RES");
-        fxNodes.filter.node1.frequency.value = Math.pow(valF, 3) * 22000;
-        fxNodes.filter.node2.frequency.value = Math.pow(valF, 3) * 22000;
-        fxNodes.filter.node1.Q.value = valR * 15;
-        fxNodes.filter.node2.Q.value = valR * 15;
-    }
-    if (fxNodes.stutter) {
-        fxNodes.stutter.lfo.frequency.value = (getKnobVal("STUTTER", "RATE") * 15) + 1;
-    }
+    if (fxNodes.delay) { fxNodes.delay.node.delayTime.value = getKnobVal("DELAY", "TIME") * 1.0; fxNodes.delay.feedback.gain.value = getKnobVal("DELAY", "FDBK") * 0.9; }
+    if (fxNodes.reverb) { fxNodes.reverb.mix.gain.value = getKnobVal("REVERB", "MIX") * 1.5; updateReverbDecay(getKnobVal("REVERB", "DECAY")); }
+    if (fxNodes.vibrato) { fxNodes.vibrato.lfo.frequency.value = getKnobVal("VIBRATO", "RATE") * 20; fxNodes.vibrato.depthNode.gain.value = getKnobVal("VIBRATO", "DEPTH") * 0.01; }
+    if (fxNodes.filter && fxNodes.filter.node1) { const valF = getKnobVal("FILTER", "FREQ"); const valR = getKnobVal("FILTER", "RES"); fxNodes.filter.node1.frequency.value = Math.pow(valF, 3) * 22000; fxNodes.filter.node2.frequency.value = Math.pow(valF, 3) * 22000; fxNodes.filter.node1.Q.value = valR * 15; fxNodes.filter.node2.Q.value = valR * 15; }
+    if (fxNodes.stutter) { fxNodes.stutter.lfo.frequency.value = (getKnobVal("STUTTER", "RATE") * 15) + 1; }
     updateRoutingFromUI();
 }
 
@@ -298,6 +336,8 @@ function loadPatternData(d) {
             if (!tracks[idx]) return;
             let t = tracks[idx]; t.segments = JSON.parse(JSON.stringify(td.segments || td || []));
             if (!Array.isArray(td)) { t.vol = td.vol ?? 0.8; t.mute = td.mute ?? false; t.wave = td.wave ?? "sine"; t.snap = td.snap ?? false; }
+            t.selectedSegments = [];
+            t.selectionBox = null;
             
             const cont = t.canvas.closest('.track-container');
             if (cont) {
@@ -317,10 +357,6 @@ function loadPatternData(d) {
         applyAllVolumes();
     }
 }
-
-// ------------------------------------------------------------------
-// AUDIO SYNTHESE (Live)
-// ------------------------------------------------------------------
 
 function startLiveSynth(track, x, y) {
     const anySolo = tracks.some(t => t.solo);
@@ -363,13 +399,12 @@ function startLiveSynth(track, x, y) {
     
     const ivs = (brush === "chord") ? (chordIntervals[chordSelect.value] || chordIntervals["major"]) : 
                 (brush === "xenakis" ? [0, 1, 2, 3, 4] : 
-                (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : [0])); // FM und Rest nutzen 1 Stimme
+                (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : [0])); 
 
     ivs.forEach((iv, i) => {
         const osc = audioCtx.createOscillator(); 
         osc.type = track.wave;
 
-        // Eigener Lautstärkeregler pro Stimme (Wichtig für Obertöne!)
         let oscVol = audioCtx.createGain();
         oscVol.gain.value = (brush === "overtone") ? ((1 / iv) * 0.4) : 1; 
         osc.connect(oscVol);
@@ -385,26 +420,23 @@ function startLiveSynth(track, x, y) {
         } else if (brush === "chord") {
             finalDetune = iv;
         } else if (brush === "overtone") {
-            currentFreq = baseFreq * iv; // Physikalische Spektral-Multiplikation!
+            currentFreq = baseFreq * iv; 
         }
 
         const startFreq = currentFreq * Math.pow(2, finalDetune / 12);
         osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
         
-        // --- DX7 FM Modulator ---
         if (brush === "fm") {
             const mod = audioCtx.createOscillator();
             mod.type = "sine"; 
             const modGain = audioCtx.createGain();
             
-            // Unreines Ratio (2.14) für metallischen FM-Sound
             mod.frequency.setValueAtTime(startFreq * 2.14, audioCtx.currentTime);
             const size = track.curSeg ? (track.curSeg.thickness || 5) : 5;
-            // Modulationsindex basiert auf Pinsel-Dicke!
             modGain.gain.setValueAtTime(startFreq * (size * 0.4), audioCtx.currentTime);
             
             mod.connect(modGain);
-            modGain.connect(osc.frequency); // Moduliert die Tonhöhe des Trägers
+            modGain.connect(osc.frequency); 
             mod.start();
             
             osc.mod = mod;
@@ -448,14 +480,13 @@ function updateLiveSynth(track, x, y) {
             const ivs = chordIntervals[chordSelect.value] || chordIntervals["major"];
             finalDetune = ivs[i] || 0;
         } else if (brush === "overtone") {
-            const harmonic = i + 1; // 1, 2, 3, 4, 5, 6
+            const harmonic = i + 1; 
             currentFreq = baseFreq * harmonic;
         }
         
         const targetF = currentFreq * Math.pow(2, finalDetune / 12);
         n.frequency.setTargetAtTime(targetF, audioCtx.currentTime, 0.02); 
 
-        // Update für FM-Modulator
         if (brush === "fm" && n.mod) {
             n.mod.frequency.setTargetAtTime(targetF * 2.14, audioCtx.currentTime, 0.02);
             const size = track.curSeg ? (track.curSeg.thickness || 5) : 5;
@@ -508,10 +539,6 @@ function triggerParticleGrain(track, y) {
     osc.start(now); osc.stop(now + 0.2); 
     activeNodes.push(osc);
 }
-
-// ------------------------------------------------------------------
-// SEQUENZER (Playback Loop)
-// ------------------------------------------------------------------
 
 function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, offlineFX = null) {
     const anySolo = tracks.some(tr => tr.solo);
@@ -588,7 +615,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     else { oscVol.connect(g); }
                     g.connect(trkG); 
 
-                    // --- DX7 FM Modulator Setup (Offline/Playback) ---
                     let mod = null, modGain = null;
                     if (brush === "fm") {
                         mod = targetCtx.createOscillator(); mod.type = "sine";
@@ -639,7 +665,6 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                         try { osc.frequency.linearRampToValueAtTime(targetF, pair.t); } 
                         catch(e) { osc.frequency.setTargetAtTime(targetF, pair.t, 0.01); }
 
-                        // Envelope für den FM Modulator
                         if (brush === "fm" && mod) {
                             const modF = targetF * 2.14;
                             const mIdx = targetF * ((seg.thickness || 5) * 0.4);
@@ -677,23 +702,32 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
     });
 }
 
+// SETUP DRAWING (inkl. MARQUEE SELECTION, SHIFT-TOGGLE & ALT-CLONE)
 function setupDrawing(track) {
     let drawing = false;
+    let moving = false;
+    let makingSelection = false;
+    let hasClonedThisDrag = false; 
+    let selStart = {x:0, y:0};
+    let lastMousePos = { x: 0, y: 0 };
+    let shiftPressedDuringSelection = false;
     
     const start = e => {
         e.preventDefault(); 
         initAudio(tracks, updateRoutingFromUI); 
         if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
         saveState(); 
+        
+        activeTrack = track; 
+        hasClonedThisDrag = false;
+        
         const pos = getPos(e, track.canvas); 
         const x = track.snap ? Math.round(pos.x / (750 / 32)) * (750 / 32) : pos.x;
         
         if (toolSelect.value === "draw") {
             drawing = true; 
-            
             const rX = Math.random() - 0.5;
             const rY = Math.random() - 0.5;
-
             track.curSeg = { points: [{ x, y: pos.y, rX, rY }], brush: brushSelect.value, thickness: parseInt(sizeSlider.value), chordType: chordSelect.value };
             track.segments.push(track.curSeg); 
             redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
@@ -704,13 +738,49 @@ function setupDrawing(track) {
             } else {
                 startLiveSynth(track, x, pos.y);
             }
-        } else {
+        } else if (toolSelect.value === "erase") {
             erase(track, pos.x, pos.y); 
+        } else if (toolSelect.value === "select") {
+            
+            let clickedSeg = null;
+            for (let i = track.segments.length - 1; i >= 0; i--) {
+                if (track.segments[i].points.some(p => Math.hypot(p.x - pos.x, p.y - pos.y) < 15)) {
+                    clickedSeg = track.segments[i];
+                    break;
+                }
+            }
+
+            if (clickedSeg) {
+                if (e.shiftKey) {
+                    const idx = track.selectedSegments.indexOf(clickedSeg);
+                    if (idx > -1) {
+                        track.selectedSegments.splice(idx, 1);
+                        moving = false; 
+                    } else {
+                        track.selectedSegments.push(clickedSeg);
+                        moving = true;
+                    }
+                } else {
+                    if (!track.selectedSegments.includes(clickedSeg)) {
+                        track.selectedSegments = [clickedSeg];
+                    }
+                    moving = true;
+                }
+                lastMousePos = { x: pos.x, y: pos.y };
+                redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
+            } else {
+                makingSelection = true;
+                shiftPressedDuringSelection = e.shiftKey;
+                if (!e.shiftKey) track.selectedSegments = [];
+                selStart = { x: pos.x, y: pos.y };
+                track.selectionBox = { x: pos.x, y: pos.y, w: 0, h: 0 };
+                redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
+            }
         }
     };
 
     const move = e => {
-        if (!drawing && toolSelect.value !== "erase") return; 
+        if (!drawing && toolSelect.value !== "erase" && !moving && !makingSelection) return; 
         const pos = getPos(e, track.canvas); 
         const x = track.snap ? Math.round(pos.x / (750 / 32)) * (750 / 32) : pos.x;
         
@@ -721,7 +791,6 @@ function setupDrawing(track) {
             if (dist > 3) { 
                 const rX = Math.random() - 0.5;
                 const rY = Math.random() - 0.5;
-                
                 track.curSeg.points.push({ x, y: pos.y, rX, rY }); 
                 redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
                 
@@ -737,6 +806,30 @@ function setupDrawing(track) {
             }
         } else if (toolSelect.value === "erase" && (e.buttons === 1 || e.type === "touchmove")) {
             erase(track, pos.x, pos.y); 
+        } else if (toolSelect.value === "select") {
+            if (makingSelection) {
+                track.selectionBox.w = pos.x - selStart.x;
+                track.selectionBox.h = pos.y - selStart.y;
+                redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
+            } else if (moving && (e.buttons === 1 || e.type === "touchmove")) {
+                
+                // ALT-DRAG TO COPY
+                if (e.altKey && !hasClonedThisDrag) {
+                    const clones = JSON.parse(JSON.stringify(track.selectedSegments));
+                    track.segments.push(...clones);
+                    track.selectedSegments = clones; 
+                    hasClonedThisDrag = true;
+                }
+
+                const dx = pos.x - lastMousePos.x;
+                const dy = pos.y - lastMousePos.y;
+                track.selectedSegments.forEach(seg => {
+                    seg.points.forEach(p => { p.x += dx; p.y += dy; });
+                });
+                
+                lastMousePos = { x: pos.x, y: pos.y };
+                redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
+            }
         }
     };
 
@@ -752,7 +845,37 @@ function setupDrawing(track) {
             track.curSeg = null; 
             stopLiveSynth(); 
             redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors); 
-        } 
+        }
+        
+        if (makingSelection) {
+            makingSelection = false;
+            if (track.selectionBox) {
+                let bx = Math.min(selStart.x, selStart.x + track.selectionBox.w);
+                let by = Math.min(selStart.y, selStart.y + track.selectionBox.h);
+                let bw = Math.abs(track.selectionBox.w);
+                let bh = Math.abs(track.selectionBox.h);
+                
+                const newlySelected = track.segments.filter(seg => 
+                    seg.points.some(p => p.x >= bx && p.x <= bx + bw && p.y >= by && p.y <= by + bh)
+                );
+                
+                if (shiftPressedDuringSelection) {
+                    newlySelected.forEach(seg => {
+                        if (!track.selectedSegments.includes(seg)) track.selectedSegments.push(seg);
+                    });
+                } else {
+                    track.selectedSegments = newlySelected;
+                }
+                
+                track.selectionBox = null;
+                redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
+            }
+        }
+        
+        if (moving) {
+            moving = false;
+            hasClonedThisDrag = false;
+        }
     };
 
     track.canvas.addEventListener("mousedown", start); 
@@ -824,7 +947,7 @@ function setupMainControls() {
 
             if (mediaRecorder && mediaRecorder.state === "recording") {
                 mediaRecorder.stop();
-                recBtn.innerText = "⏺ Rec";
+                recBtn.innerHTML = '<span class="rec-dot"></span> REC';
                 recBtn.style.color = ""; 
             } else {
                 const dest = audioCtx.createMediaStreamDestination();
@@ -834,7 +957,7 @@ function setupMainControls() {
 
                 mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
                 mediaRecorder.onstop = async () => {
-                    recBtn.innerText = "⏳ Saving...";
+                    recBtn.innerHTML = "⏳ Saving...";
                     const webmBlob = new Blob(recordedChunks, { type: "audio/webm" });
                     const arrayBuffer = await webmBlob.arrayBuffer();
                     const decodedAudio = await audioCtx.decodeAudioData(arrayBuffer);
@@ -849,11 +972,11 @@ function setupMainControls() {
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                     masterGain.disconnect(dest);
-                    recBtn.innerText = "⏺ Rec";
+                    recBtn.innerHTML = '<span class="rec-dot"></span> REC';
                 };
 
                 mediaRecorder.start();
-                recBtn.innerText = "⏹ Stop Rec";
+                recBtn.innerHTML = "⏹ Stop Rec";
                 recBtn.style.color = "#ff4444";
             }
         });
@@ -986,6 +1109,7 @@ function setupMainControls() {
             const state = JSON.parse(stateStr);
             tracks.forEach((t, i) => {
                 t.segments = state[i];
+                t.selectedSegments = []; 
                 redrawTrack(t, undefined, brushSelect.value, chordIntervals, chordColors);
             });
         } 
@@ -993,7 +1117,7 @@ function setupMainControls() {
     
     document.getElementById("clearButton").addEventListener("click", () => { 
         saveState();
-        tracks.forEach(t => { t.segments = []; drawGrid(t); }); 
+        tracks.forEach(t => { t.segments = []; t.selectedSegments = []; drawGrid(t); }); 
     });
     
     harmonizeCheckbox.addEventListener("change", () => {

@@ -54,10 +54,8 @@ function drawSegmentXenakis(ctx, pts, idx1, idx2, size) {
     ctx.strokeStyle = "#000"; 
 }
 
-// Der Rorschach/Rorbach Pinsel (Symmetrisch gespiegelt)
 function drawSegmentRorschach(ctx, pts, idx1, idx2, size) {
     ctx.lineCap = "round";
-    // Hauptlinie
     ctx.lineWidth = size;
     ctx.strokeStyle = "#000";
     ctx.beginPath();
@@ -65,7 +63,6 @@ function drawSegmentRorschach(ctx, pts, idx1, idx2, size) {
     ctx.lineTo(pts[idx2].x, pts[idx2].y);
     ctx.stroke();
 
-    // Gespiegelte Linie
     ctx.lineWidth = size;
     ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
     ctx.beginPath();
@@ -76,12 +73,10 @@ function drawSegmentRorschach(ctx, pts, idx1, idx2, size) {
 
 function drawSegmentOvertone(ctx, pts, idx1, idx2, size) {
     ctx.lineCap = "round";
-    // Zeichne Grundton und 4 Obertöne
     for (let i = 1; i <= 5; i++) {
-        ctx.lineWidth = size / i; // Obertöne werden nach oben dünner
-        ctx.strokeStyle = `rgba(0, 0, 0, ${1 / i})`; // Obertöne verblassen
+        ctx.lineWidth = size / i; 
+        ctx.strokeStyle = `rgba(0, 0, 0, ${1 / i})`; 
         ctx.beginPath();
-        // Logarithmischer Abstand für Oktaven (f, 2f, 3f, 4f...)
         const offset = Math.log2(i) * 20; 
         ctx.moveTo(pts[idx1].x, pts[idx1].y - offset);
         ctx.lineTo(pts[idx2].x, pts[idx2].y - offset);
@@ -90,7 +85,6 @@ function drawSegmentOvertone(ctx, pts, idx1, idx2, size) {
 }
 
 function drawSegmentFM(ctx, pts, idx1, idx2, size) {
-    // Trägerwelle (Dicker, transparenter "Radiostrahl")
     ctx.lineCap = "round";
     ctx.lineWidth = size * 2.5;
     ctx.strokeStyle = "rgba(0, 150, 255, 0.2)"; 
@@ -99,7 +93,6 @@ function drawSegmentFM(ctx, pts, idx1, idx2, size) {
     ctx.lineTo(pts[idx2].x, pts[idx2].y);
     ctx.stroke();
 
-    // Modulatorwelle (Agressiver Zickzack innerhalb der Trägerwelle)
     ctx.lineWidth = Math.max(1, size / 2);
     ctx.strokeStyle = "#000";
     ctx.beginPath();
@@ -131,6 +124,15 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
     t.segments.forEach(seg => {
         const pts = seg.points; if (pts.length < 1) return;
         const brush = seg.brush || "standard"; const size = seg.thickness || 5;
+        
+        t.ctx.save(); // Zustand speichern für Glow-Effekt
+        
+        // Glow-Effekt, wenn das Segment ausgewählt ist
+        if (t.selectedSegments && t.selectedSegments.includes(seg)) {
+            t.ctx.shadowColor = "#0275ff";
+            t.ctx.shadowBlur = 8;
+        }
+
         t.ctx.beginPath(); t.ctx.strokeStyle = "#000"; t.ctx.lineWidth = size;
         
         if(brush === "chord"){ 
@@ -149,15 +151,26 @@ export function redrawTrack(t, hx, brushSelectValue, chordIntervals, chordColors
                     case "calligraphy": drawSegmentCalligraphy(t.ctx, pts, i-1, i, size); break; 
                     case "fractal": drawSegmentFractal(t.ctx, pts, i-1, i, size, liveChaos, liveMorph); break; 			
                     case "xenakis": drawSegmentXenakis(t.ctx, pts, i-1, i, size); break;
-                    case "rorschach": drawSegmentRorschach(t.ctx, pts, i-1, i, size); break; // Rorschach/Rorbach eingebunden
+                    case "rorschach": drawSegmentRorschach(t.ctx, pts, i-1, i, size); break; 
                     case "overtone": drawSegmentOvertone(t.ctx, pts, i-1, i, size); break;
                     case "fm": drawSegmentFM(t.ctx, pts, i-1, i, size); break;
                     default: drawSegmentStandard(t.ctx, pts, i-1, i, size); 
                 } 
             }
         } 
+        
+        t.ctx.restore(); // Schatten wieder zurücksetzen
     });
     
+    // Auswahl-Rechteck (Marquee) zeichnen
+    if (t.selectionBox) {
+        t.ctx.fillStyle = "rgba(0, 150, 255, 0.2)";
+        t.ctx.strokeStyle = "rgba(0, 150, 255, 0.8)";
+        t.ctx.lineWidth = 1;
+        t.ctx.fillRect(t.selectionBox.x, t.selectionBox.y, t.selectionBox.w, t.selectionBox.h);
+        t.ctx.strokeRect(t.selectionBox.x, t.selectionBox.y, t.selectionBox.w, t.selectionBox.h);
+    }
+
     if(hx !== undefined){ 
         t.ctx.save(); t.ctx.beginPath(); t.ctx.strokeStyle = "red"; t.ctx.lineWidth = 2; 
         t.ctx.moveTo(hx,0); t.ctx.lineTo(hx,100); t.ctx.stroke(); t.ctx.restore(); 
