@@ -439,3 +439,202 @@ body.eraser-mode, body.eraser-mode canvas { cursor: none !important; }
 body.select-mode .track__canvas {
   cursor: move !important;
 }
+
+
+/* =========================================
+   Tooltip-Container 
+   ========================================= */
+
+
+[data-tooltip] {
+  position: relative;
+  display: inline-block; /* WICHTIG: Erlaubt korrekte Positionierung */
+  cursor: help;
+}
+
+/* Das Tooltip-Fenster */
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%; 
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px); /* Leicht nach oben versetzt */
+  background-color: #333; /* Dunkelgrau für Kontrast */
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Hover-Effekt */
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+/* --- HELP OVERLAY TYPOGRAPHY & LAYOUT --- */
+.help-content {
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.6;
+  padding: 40px;
+  max-width: 950px;
+  margin: 0 auto;
+}
+
+.help-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border-btn);
+  padding-bottom: 1rem;
+}
+
+.help-lang-nav {
+  display: flex;
+  gap: 15px;
+  font-weight: bold;
+}
+
+.help-lang-nav .lang-link {
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.help-lang-nav .lang-link.active,
+.help-lang-nav .lang-link:hover {
+  opacity: 1;
+  color: var(--color-pink);
+}
+
+.btn--close-help {
+  background: transparent;
+  border: 1px solid var(--color-border-btn);
+  color: var(--color-text);
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.help-title {
+  color: var(--color-pink);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.help-intro {
+  /* Keine max-width mehr hier! Dadurch wird der Container und die Linie 100% breit */
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border-btn);
+}
+
+.help-intro h3 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-text);
+  margin-top: 0;
+  margin-bottom: 12px;
+  opacity: 0.8; /* Dezent abgesetzt von der Hauptüberschrift */
+}
+
+.help-intro p { 
+  max-width: 85ch; /* Nur der Text wird in der Breite begrenzt (besser lesbar) */
+  margin-bottom: 10px; 
+}
+
+.help-intro p:last-child { 
+  margin-bottom: 0; 
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+}
+
+.help-block-full { grid-column: 1 / -1; }
+
+.help-block h3 {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-border-btn);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+/* Sauberes Text-Alignment */
+.help-dl {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px 15px;
+  margin: 0;
+}
+
+/* Begriffe farblich dezent an deine App anpassen */
+.help-dl dt { font-weight: bold; color: var(--color-text); }
+.help-dl dd { margin: 0; color: #bbb; }
+
+/* Grid für die Pinsel (2 Spalten auf großen Bildschirmen) */
+.help-brushes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 15px 40px;
+}
+.help-brushes-grid .help-dl {
+  grid-template-columns: 100px 1fr;
+}
+
+.help-shortcuts {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border-btn);
+  padding: 25px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.help-shortcuts h3 {
+  border-bottom: 1px solid var(--color-border-btn);
+  margin-top: 0;
+}
+
+.help-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px 40px;
+}
+
+.shortcut-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+}
+
+.shortcut-row kbd {
+  color: #fff;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+.shortcut-row span {
+  color: #bbb;
+  font-size: 0.9em;
+}

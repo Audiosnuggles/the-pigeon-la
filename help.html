@@ -1,309 +1,301 @@
-<style>
-  /* --- The Pigeon: Manual Typography & Layout --- */
-  .pigeon-help-wrapper {
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #d0d0d0;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px 40px 60px 40px;
-    line-height: 1.6;
-  }
-  
-  .pigeon-help-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 3rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-bottom: 1rem;
-  }
-  
-  .lang-link { font-weight: 600; font-size: 0.85rem; letter-spacing: 0.5px; }
-  
-  /* Preamble / Intro */
-  .help-title {
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    font-weight: 600;
-    color: #fff;
-    margin: 0 0 1.5rem 0;
-  }
-  
-  .help-lead {
-    font-size: 1.05rem;
-    color: #a0a0a0;
-    max-width: 75ch; /* Optimal reading length */
-    margin-bottom: 1.5rem;
-  }
+<div class="help-content">
+  <header class="help-header">
+    <nav id="langLinks" class="help-lang-nav">
+      <span class="lang-link active" data-lang="de">DE</span>
+      <span class="lang-link" data-lang="en">EN</span>
+      <span class="lang-link" data-lang="fr">FR</span>
+    </nav>
+    <button id="closeHelpBtn" class="btn--close-help">X</button>
+  </header>
 
-  .help-lead strong { color: #ddd; }
-  
-  /* Content Grid */
-  .help-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 3rem;
-    margin-top: 4rem;
-  }
-  
-  .help-section-title {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #fff;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  /* Definition Lists for super clean text alignment */
-  .help-dl { margin: 0; display: grid; grid-template-columns: 120px 1fr; gap: 0.75rem 1rem; font-size: 0.9rem; }
-  .help-dl dt { font-weight: 600; color: #fff; text-align: right; }
-  .help-dl dd { margin: 0; color: #999; }
-  
-  .help-brushes { grid-column: 1 / -1; }
-  .help-brushes .help-dl { grid-template-columns: 160px 1fr; }
-  
-  /* Cheat Sheet (Shortcuts) */
-  .shortcuts-box {
-    grid-column: 1 / -1;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 6px;
-    padding: 2rem;
-    margin-top: 2rem;
-  }
-  .shortcuts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem 3rem;
-    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
-    font-size: 0.8rem;
-  }
-  .shortcut-item {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 1px dashed rgba(255,255,255,0.1);
-    padding-bottom: 4px;
-  }
-  .shortcut-key { color: #fff; font-weight: bold; }
-  .shortcut-desc { color: #777; }
-</style>
-
-<div class="pigeon-help-wrapper">
-  
-  <div class="pigeon-help-controls">
-    <div id="langLinks">
-      <span class="lang-link active" data-lang="de" style="cursor: pointer;">DE</span> <span style="opacity: 0.3; margin: 0 8px;">|</span> 
-      <span class="lang-link" data-lang="en" style="cursor: pointer; opacity: 0.4;">EN</span> <span style="opacity: 0.3; margin: 0 8px;">|</span> 
-      <span class="lang-link" data-lang="fr" style="cursor: pointer; opacity: 0.4;">FR</span>
-    </div>
-    <button id="closeHelpBtn" style="background: none; border: 1px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; padding: 4px 12px; font-size: 0.8rem; letter-spacing: 1px;">CLOSE</button>
-  </div>
-
-  <div id="help-de" class="help-lang-section">
-    <h1 class="help-title">The Pigeon: Referenzhandbuch</h1>
+  <article id="help-de" class="help-lang-section">
+    <h2 class="help-title">The Pigeon: Grafische Synthese</h2>
     
-    <p class="help-lead"><strong>The Pigeon</strong> ist ein webbasiertes System für grafische Vektorsynthese, das zweidimensionale Vektordaten in Echtzeit in Steuersignale für komplexe Audio-Engines übersetzt. Das Interface fungiert als akustisches Koordinatensystem: Die X-Achse definiert den Zeitverlauf ($t$), die Y-Achse die fundamentale Frequenz ($f_0$). Die visuelle Darstellung dient dabei als abstrakte grafische Partitur und nicht als Abbildung der physikalischen Schallwelle.</p>
-    
-    <p class="help-lead">Inspiriert von elektroakustischen Pionierarbeiten (wie Daphne Orams „Oramics“) und konzipiert als performatives Instrument, bildet das System einen methodischen Kontrast zur funktionalen Dichte herkömmlicher DAWs. Der bewusste Verzicht auf etablierte Raster reduziert die Komposition auf eine unmittelbare, visuelle Eingabe und begünstigt experimentelle Ansätze der Klangformung.</p>
+    <section class="help-intro">
+      <h3>Über The Pigeon</h3>
+      <p><strong>The Pigeon</strong> ist ein webbasiertes System für grafische Vektorsynthese, das zweidimensionale Vektordaten in Echtzeit in Steuersignale für komplexe Audio-Engines übersetzt. Das Interface fungiert als akustisches Koordinatensystem: Die X-Achse definiert den Zeitverlauf ($t$), die Y-Achse die fundamentale Frequenz ($f_0$). Die visuelle Darstellung dient dabei als abstrakte grafische Partitur (Steuerdaten) und nicht als Abbildung der tatsächlichen physikalischen Schallwelle.</p>
+      <p>Inspiriert von elektroakustischen Pionierarbeiten (wie Daphne Orams „Oramics“) und konzipiert als performatives Instrument, bildet <em>The Pigeon</em> einen methodischen Kontrast zur funktionalen Dichte herkömmlicher DAWs. Das System reduziert den kompositorischen Prozess auf eine unmittelbare, visuelle Eingabe. Der bewusste Verzicht auf etablierte Raster begünstigt alternative, non-lineare und experimentelle Ansätze der Klangformung.</p>
+    </section>
 
     <div class="help-grid">
+      <section class="help-block">
+        <h3>1. Initialisierung & Zeichnung</h3>
+        <dl class="help-dl">
+          <dt>Pattern-Zuweisung</dt> <dd>Wähle in der Pattern Bank (unten rechts) eine leere Zelle, um eine neue Sequenz zu initiieren.</dd>
+          <dt>Grafische Eingabe</dt> <dd>Die X-Achse repräsentiert die Zeit (t), die Y-Achse die fundamentale Frequenz (f0). Zeichne Vektoren in das Canvas.</dd>
+          <dt>Werkzeuge</dt>         <dd>Wähle zwischen Draw (Vektor-Eingabe) und Erase (Vektor-Tilgung).</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>2. Spur-Architektur (Tracks)</h3>
+        <dl class="help-dl">
+          <dt>Wellenformen</dt> <dd>Definiert das harmonische Spektrum: ∿ (Sinus/Grundton), ⊓ (Rechteck/ungerade Obertöne), ∧ (Sägezahn/alle Obertöne).</dd>
+          <dt>Snap</dt>         <dd>Erzwingt eine harte Rasterung der X-Koordinaten zur absoluten Taktsynchronität.</dd>
+          <dt>Routing</dt>      <dd>Nutze Solo/Mute für isolierte Audiosignal-Kontrolle und die Slider für die Amplituden-Skalierung.</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>3. Performative Interaktion</h3>
+        <dl class="help-dl">
+          <dt>Poke Me Pad</dt>   <dd>Ein taktiles Echtzeit-Interface. Triggert sofortige Frequenz-Zuweisungen auf der selektierten Spur.</dd>
+          <dt>Effekt-Matrix</dt> <dd>Klicke auf die Farbindikatoren, um das Signal in dedizierte DSP-Module zu routen.</dd>
+          <dt>X/Y Link</dt>      <dd>Wandelt das Pad in einen Makro-Controller um, der algorithmisch Parameter der Effekt-Engine interpoliert.</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>4. Taktung & Makro-Struktur</h3>
+        <dl class="help-dl">
+          <dt>Transport</dt> <dd>Start/Stopp der globalen Playback-Schleife (Shortcut: Leertaste).</dd>
+          <dt>Harmonize</dt> <dd>Zwingt alle Y-Koordinaten durch mathematische Rundung auf vordefinierte musikalische Skalen.</dd>
+          <dt>EXT SYNC</dt>  <dd>Synchronisiert den Sequenzer mit deiner DAW (via virtuellem MIDI-Port).</dd>
+        </dl>
+      </section>
       
-      <div>
-        <h3 class="help-section-title">Architektur & Routing</h3>
-        <dl class="help-dl">
-          <dt>Pattern Bank</dt>
-          <dd>Wähle eine leere Speicherzelle (A-C), um eine neue Sequenz zu initiieren.</dd>
-          <dt>Wellenformen</dt>
-          <dd>Definiert das Spektrum: <strong>∿</strong> (Sinus), <strong>⊓</strong> (Rechteck), <strong>∧</strong> (Sägezahn).</dd>
-          <dt>Snap</dt>
-          <dd>Erzwingt eine harte Quantisierung der X-Koordinaten (Taktsynchronität).</dd>
-          <dt>Effekt-Matrix</dt>
-          <dd>Routet Audiosignale zielgerichtet in dedizierte DSP-Module (Farbindikatoren).</dd>
-        </dl>
-      </div>
-
-      <div>
-        <h3 class="help-section-title">Performance & Makro</h3>
-        <dl class="help-dl">
-          <dt>Poke Me Pad</dt>
-          <dd>Taktiles Interface für sofortige Frequenz-Zuweisungen auf der Zielspur.</dd>
-          <dt>X/Y Link</dt>
-          <dd>Wandelt das Pad temporär in einen Makro-Controller für Effekt-Parameter um.</dd>
-          <dt>Harmonize</dt>
-          <dd>Zwingt alle gezeichneten Y-Koordinaten auf wählbare musikalische Skalen.</dd>
-          <dt>Ext Sync</dt>
-          <dd>Synchronisiert die globale Playback-Schleife mit einer externen DAW (MIDI).</dd>
-        </dl>
-      </div>
-
-      <div class="help-brushes">
-        <h3 class="help-section-title">Synthese-Engines (Brushes)</h3>
-        <dl class="help-dl">
-          <dt>Standard</dt>     <dd>Kontinuierlicher Phasen-Oszillator (ideal für Portamento-Gesten).</dd>
-          <dt>Pressure</dt>     <dd>Geschwindigkeitsabhängige Linienführung, simuliert physischen Druck.</dd>
-          <dt>Particles</dt>    <dd>Stochastische Mikromontage (Echtzeit-Granularsynthese).</dd>
-          <dt>Chord</dt>        <dd>Harmonische Frequenz-Vervielfachung basierend auf festgelegten Intervallen.</dd>
-          <dt>Xenakids</dt>     <dd>Unkorrelierte Phasenmodulation zur Erzeugung dichter Dissonanz-Cluster.</dd>
-          <dt>Rorbach</dt>      <dd>Achsensymmetrischer Kontrapunkt (spiegelt die Y-Achse).</dd>
-          <dt>Overtone</dt>     <dd>Additive Spektralsynthese durch Hinzufügen logarithmischer Partialtöne.</dd>
-          <dt>DX7 (FM)</dt>     <dd>Zwei-Operator Frequenzmodulation nach der John Chowning-Methode.</dd>
-          <dt>Fractal</dt>      <dd>Destabilisierter Synthesizer. Steuerbar über das FRACTAL-Rack (Chaos = Rausch-Jitter, Morph = Wavefolding-Intensität).</dd>
-        </dl>
-      </div>
-
-      <div class="shortcuts-box">
-        <h3 class="help-section-title" style="border: none; margin-bottom: 1rem;">Keyboard Shortcuts & Workflow</h3>
-        <div class="shortcuts-grid">
-          <div class="shortcut-item"><span class="shortcut-desc">Wiedergabe starten/stoppen</span><span class="shortcut-key">[ LEERTASTE ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Letzte Aktion rückgängig machen</span><span class="shortcut-key">[ CMD/CTRL + Z ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Selektierte Vektoren kopieren</span><span class="shortcut-key">[ CMD/CTRL + C ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Vektoren aus Zwischenablage einfügen</span><span class="shortcut-key">[ CMD/CTRL + V ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Selektion löschen</span><span class="shortcut-key">[ BACKSPACE ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Selektierte Vektoren klonen</span><span class="shortcut-key">[ ALT + Drag ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Mehrfachauswahl umschalten</span><span class="shortcut-key">[ SHIFT + Klick ]</span></div>
+      <section class="help-block help-block-full">
+        <h3>5. Geometrische Synthese-Werkzeuge (Brushes)</h3>
+        <div class="help-brushes-grid">
+          <dl class="help-dl">
+            <dt>Standard</dt>    <dd>Kontinuierlicher Phasen-Oszillator (perfektes Portamento).</dd>
+            <dt>Pressure</dt>    <dd>Geschwindigkeitsabhängige Linienführung. Simuliert haptischen Druck.</dd>
+            <dt>Calligraphy</dt> <dd>Winkel-determinierte Geometrie.</dd>
+            <dt>Particles</dt>   <dd>Stochastische Mikromontage (Granularsynthese). Zerlegt die Kurve in asynchrone, granulare Grains.</dd>
+            <dt>Chord</dt>       <dd>Harmonische Frequenz-Vervielfachung. Generiert parallele Oszillatoren.</dd>
+          </dl>
+          <dl class="help-dl">
+            <dt>Xenakids</dt>    <dd>Unkorrelierte Phasenmodulation. Erzeugt schwebende Dissonanz-Cluster.</dd>
+            <dt>Rorbach</dt>     <dd>Achsensymmetrischer Kontrapunkt.</dd>
+            <dt>Overtone</dt>    <dd>Additive Spektralsynthese. Erweitert den Grundton um logarithmisch angeordnete Partialtöne.</dd>
+            <dt>DX7 (FM)</dt>    <dd>Frequenzmodulation nach John Chowning.</dd>
+            <dt>Fractal</dt>     <dd>Destabilisierter Synthesizer.<br>
+              <span style="opacity: 0.7; font-size: 0.9em; display: inline-block; margin-top: 4px;">
+                <em>DSP-Steuerung via "FRACTAL" Rack:</em><br>
+                → <strong>CHAOS:</strong> Injiziert Rausch-Jitter in die Y-Matrix.<br>
+                → <strong>MORPH:</strong> Aktiviert eine nicht-lineare Transferfunktion (WaveShaper/Wavefolding).
+              </span>
+            </dd>
+          </dl>
         </div>
-      </div>
+      </section>
 
+      <section class="help-block help-block-full">
+        <h3>6. Datensicherung & Rendering</h3>
+        <dl class="help-dl" style="grid-template-columns: 150px 1fr;">
+          <dt>SAVE</dt>             <dd>Speichert den Zustand aller Vektor-Matrizen auf ein Pad der Bank.</dd>
+          <dt>Live Arrangement</dt> <dd>Sequenzielles Umschalten zwischen Pattern-Speichern in Echtzeit.</dd>
+          <dt>Export WAV</dt>       <dd>Berechnet die Audio-Buffer iterativ (Offline-Rendering).</dd>
+          <dt>Live REC</dt>         <dd>Rekordiert den Master-Bus und exportiert improvisierte Performances.</dd>
+          <dt>Import/Export</dt>    <dd>Serialisiert die komplette Session (JSON).</dd>
+        </dl>
+      </section>
+
+      <section class="help-block help-block-full help-shortcuts">
+        <h3>Shortcuts & Workflow</h3>
+        <div class="help-shortcuts-grid">
+          <div class="shortcut-row"><kbd>[LEERTASTE]</kbd> <span>Play / Stop</span></div>
+          <div class="shortcut-row"><kbd>[CMD/CTRL + Z]</kbd> <span>Undo</span></div>
+          <div class="shortcut-row"><kbd>[CMD/CTRL + C/V]</kbd> <span>Copy / Paste</span></div>
+          <div class="shortcut-row"><kbd>[ALT + Drag]</kbd> <span>Selektion klonen</span></div>
+          <div class="shortcut-row"><kbd>[BACKSPACE]</kbd> <span>Auswahl löschen</span></div>
+          <div class="shortcut-row"><kbd>[SHIFT + Klick]</kbd> <span>Multi-Select</span></div>
+        </div>
+      </section>
     </div>
-  </div>
+  </article>
 
-  <div id="help-en" class="help-lang-section" style="display: none;">
-    <h1 class="help-title">The Pigeon: Reference Manual</h1>
+  <article id="help-en" class="help-lang-section" style="display: none;">
+    <h2 class="help-title">The Pigeon: Graphic Synthesis</h2>
     
-    <p class="help-lead"><strong>The Pigeon</strong> is a web-based system for graphical vector synthesis that translates two-dimensional vector data into control signals for complex audio engines in real time. The interface functions as an acoustic coordinate system: the X-axis defines the timeline ($t$), and the Y-axis defines the fundamental frequency ($f_0$). The visual representation serves as an abstract graphical score rather than a depiction of a physical sound wave.</p>
-    
-    <p class="help-lead">Inspired by early electroacoustic works (such as Daphne Oram's "Oramics") and designed as a performative instrument, the system serves as a methodical contrast to the functional density of conventional DAWs. By intentionally bypassing established grids, the process is reduced to immediate visual input, fostering experimental approaches to sound design.</p>
+    <section class="help-intro">
+      <h3>About The Pigeon</h3>
+      <p><strong>The Pigeon</strong> is a web-based system for graphical vector synthesis that translates two-dimensional vector data into control signals for complex audio engines in real time. The interface functions as an acoustic coordinate system: the X-axis defines the timeline ($t$), and the Y-axis defines the fundamental frequency ($f_0$). The visual representation serves as an abstract graphical score (control data) rather than a depiction of the actual physical sound wave.</p>
+      <p>Inspired by early electroacoustic works (such as Daphne Oram's "Oramics") and designed as a performative instrument, <em>The Pigeon</em> serves as a methodical contrast to the functional density of conventional DAWs. The system reduces the compositional process to immediate visual input. By intentionally bypassing established grids, the focus shifts to the direct acoustic impact of graphic gestures, fostering alternative, non-linear approaches to sound design.</p>
+    </section>
 
     <div class="help-grid">
+      <section class="help-block">
+        <h3>1. Initialization & Drawing</h3>
+        <dl class="help-dl">
+          <dt>Assign Pattern</dt> <dd>Select an empty cell in the Pattern Bank (bottom right) to initiate a sequence.</dd>
+          <dt>Vector Input</dt>   <dd>The X-axis represents time (t), the Y-axis fundamental frequency (f0). Draw vectors into the canvas.</dd>
+          <dt>Tools</dt>          <dd>Toggle between Draw (vector input) and Erase (vector removal).</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>2. Track Architecture</h3>
+        <dl class="help-dl">
+          <dt>Waveforms</dt> <dd>Defines the harmonic spectrum: ∿ (Sine), ⊓ (Square), ∧ (Sawtooth).</dd>
+          <dt>Snap</dt>      <dd>Forces hard quantization on the X-axis for absolute temporal synchronization.</dd>
+          <dt>Routing</dt>   <dd>Use Solo/Mute for isolated audio control and volume sliders for amplitude scaling.</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>3. Performative Interaction</h3>
+        <dl class="help-dl">
+          <dt>Poke Me Pad</dt> <dd>A tactile real-time interface. Triggers instant frequency assignments on the selected track.</dd>
+          <dt>FX Matrix</dt>   <dd>Route audio signals into dedicated DSP modules using the color indicators.</dd>
+          <dt>X/Y Link</dt>    <dd>Hijacks the tactile pad to algorithmically interpolate FX parameters.</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>4. Clock & Macro Structure</h3>
+        <dl class="help-dl">
+          <dt>Transport</dt> <dd>Start/Stop the global playback loop (Shortcut: Spacebar).</dd>
+          <dt>Harmonize</dt> <dd>Constrains all Y-coordinates to predefined musical scales via mathematical rounding.</dd>
+          <dt>EXT SYNC</dt>  <dd>Slaves the sequencer to your DAW (via virtual MIDI port).</dd>
+        </dl>
+      </section>
       
-      <div>
-        <h3 class="help-section-title">Architecture & Routing</h3>
-        <dl class="help-dl">
-          <dt>Pattern Bank</dt>
-          <dd>Select an empty memory cell (A-C) to initiate a new sequence.</dd>
-          <dt>Waveforms</dt>
-          <dd>Defines the spectrum: <strong>∿</strong> (Sine), <strong>⊓</strong> (Square), <strong>∧</strong> (Sawtooth).</dd>
-          <dt>Snap</dt>
-          <dd>Forces hard quantization on the X-axis for absolute synchronization.</dd>
-          <dt>FX Matrix</dt>
-          <dd>Routes audio signals into dedicated DSP modules using color indicators.</dd>
-        </dl>
-      </div>
-
-      <div>
-        <h3 class="help-section-title">Performance & Macro</h3>
-        <dl class="help-dl">
-          <dt>Poke Me Pad</dt>
-          <dd>A tactile interface for instant frequency triggers on the target track.</dd>
-          <dt>X/Y Link</dt>
-          <dd>Temporarily hijacks the pad to act as a macro controller for FX parameters.</dd>
-          <dt>Harmonize</dt>
-          <dd>Constrains all drawn Y-coordinates to mathematical musical scales.</dd>
-          <dt>Ext Sync</dt>
-          <dd>Synchronizes the global playback loop to an external DAW via MIDI.</dd>
-        </dl>
-      </div>
-
-      <div class="help-brushes">
-        <h3 class="help-section-title">Synthesis Engines (Brushes)</h3>
-        <dl class="help-dl">
-          <dt>Standard</dt>     <dd>Continuous phase oscillator (ideal for portamento gestures).</dd>
-          <dt>Pressure</dt>     <dd>Velocity-dependent stroke thickness, simulating physical pressure.</dd>
-          <dt>Particles</dt>    <dd>Stochastic micro-montage (real-time granular synthesis).</dd>
-          <dt>Chord</dt>        <dd>Harmonic frequency multiplication based on defined intervals.</dd>
-          <dt>Xenakids</dt>     <dd>Uncorrelated phase modulation generating dense dissonance clusters.</dd>
-          <dt>Rorbach</dt>      <dd>Axis-symmetric counterpoint (mirrors the Y-axis).</dd>
-          <dt>Overtone</dt>     <dd>Additive spectral synthesis by injecting logarithmic partials.</dd>
-          <dt>DX7 (FM)</dt>     <dd>Two-operator frequency modulation (John Chowning method).</dd>
-          <dt>Fractal</dt>      <dd>Destabilized synthesizer. Controlled via the FRACTAL rack (Chaos = Noise Jitter, Morph = Wavefolding intensity).</dd>
-        </dl>
-      </div>
-
-      <div class="shortcuts-box">
-        <h3 class="help-section-title" style="border: none; margin-bottom: 1rem;">Keyboard Shortcuts & Workflow</h3>
-        <div class="shortcuts-grid">
-          <div class="shortcut-item"><span class="shortcut-desc">Start / Stop playback</span><span class="shortcut-key">[ SPACE ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Undo last action</span><span class="shortcut-key">[ CMD/CTRL + Z ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Copy selected vectors</span><span class="shortcut-key">[ CMD/CTRL + C ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Paste clipboard vectors</span><span class="shortcut-key">[ CMD/CTRL + V ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Delete selection</span><span class="shortcut-key">[ BACKSPACE ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Clone selected vectors</span><span class="shortcut-key">[ ALT + Drag ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Toggle multi-selection</span><span class="shortcut-key">[ SHIFT + Click ]</span></div>
+      <section class="help-block help-block-full">
+        <h3>5. Geometric Synthesis Brushes</h3>
+        <div class="help-brushes-grid">
+          <dl class="help-dl">
+            <dt>Standard</dt>    <dd>Continuous phase oscillator (perfect portamento).</dd>
+            <dt>Pressure</dt>    <dd>Velocity-dependent strokes simulating physical pressure.</dd>
+            <dt>Calligraphy</dt> <dd>Angle-determined geometry.</dd>
+            <dt>Particles</dt>   <dd>Stochastic micro-montage (Granular Synthesis). Breaks the curve into asynchronous, granular grains.</dd>
+            <dt>Chord</dt>       <dd>Harmonic frequency multiplication. Generates parallel oscillators.</dd>
+          </dl>
+          <dl class="help-dl">
+            <dt>Xenakids</dt>    <dd>Uncorrelated phase modulation. Creates hovering dissonance clusters.</dd>
+            <dt>Rorbach</dt>     <dd>Axis-symmetric counterpoint.</dd>
+            <dt>Overtone</dt>    <dd>Additive Spectral Synthesis. Extends the fundamental with logarithmically arranged partials.</dd>
+            <dt>DX7 (FM)</dt>    <dd>Frequency Modulation (John Chowning method).</dd>
+            <dt>Fractal</dt>     <dd>Destabilized synthesizer.<br>
+              <span style="opacity: 0.7; font-size: 0.9em; display: inline-block; margin-top: 4px;">
+                <em>DSP-Control via "FRACTAL" Rack:</em><br>
+                → <strong>CHAOS:</strong> Injects noise-jitter into the Y-matrix.<br>
+                → <strong>MORPH:</strong> Activates a non-linear transfer function (WaveShaper/Wavefolding).
+              </span>
+            </dd>
+          </dl>
         </div>
-      </div>
+      </section>
 
+      <section class="help-block help-block-full">
+        <h3>6. Saving & Rendering</h3>
+        <dl class="help-dl" style="grid-template-columns: 150px 1fr;">
+          <dt>SAVE</dt>             <dd>Stores the state of all vector matrices to a bank pad.</dd>
+          <dt>Live Arrange</dt>     <dd>Sequential switching between pattern memories in real-time.</dd>
+          <dt>Export WAV</dt>       <dd>Iterative offline-rendering of audio buffers.</dd>
+          <dt>Live REC</dt>         <dd>Records the master bus and exports improvised performances.</dd>
+          <dt>Import/Export</dt>    <dd>Serializes the complete session (JSON).</dd>
+        </dl>
+      </section>
+
+      <section class="help-block help-block-full help-shortcuts">
+        <h3>Shortcuts & Workflow</h3>
+        <div class="help-shortcuts-grid">
+          <div class="shortcut-row"><kbd>[SPACEBAR]</kbd> <span>Play / Stop</span></div>
+          <div class="shortcut-row"><kbd>[CMD/CTRL + Z]</kbd> <span>Undo</span></div>
+          <div class="shortcut-row"><kbd>[CMD/CTRL + C/V]</kbd> <span>Copy / Paste</span></div>
+          <div class="shortcut-row"><kbd>[ALT + Drag]</kbd> <span>Clone selection</span></div>
+          <div class="shortcut-row"><kbd>[BACKSPACE]</kbd> <span>Delete selection</span></div>
+          <div class="shortcut-row"><kbd>[SHIFT + Click]</kbd> <span>Multi-Select</span></div>
+        </div>
+      </section>
     </div>
-  </div>
+  </article>
 
-  <div id="help-fr" class="help-lang-section" style="display: none;">
-    <h1 class="help-title">The Pigeon: Manuel de Référence</h1>
+  <article id="help-fr" class="help-lang-section" style="display: none;">
+    <h2 class="help-title">The Pigeon: Synthèse Graphique</h2>
     
-    <p class="help-lead"><strong>The Pigeon</strong> est un système web de synthèse vectorielle graphique qui traduit des données bidimensionnelles en signaux de contrôle pour des moteurs audio en temps réel. L'interface fonctionne comme un système de coordonnées acoustiques : l'axe X définit le temps ($t$), l'axe Y la fréquence fondamentale ($f_0$). La représentation visuelle sert de partition abstraite et non de représentation de l'onde sonore.</p>
-    
-    <p class="help-lead">Inspiré par les travaux pionniers de l'électroacoustique et conçu comme un instrument performatif, le système constitue un contraste méthodique à la densité des DAW conventionnels. L'absence délibérée de grilles réduit le processus à une saisie visuelle immédiate, favorisant des approches expérimentales de la mise en forme sonore.</p>
+    <section class="help-intro">
+      <h3>À propos de The Pigeon</h3>
+      <p><strong>The Pigeon</strong> est un système web de synthèse vectorielle graphique qui traduit des données vectorielles bidimensionnelles en signaux de contrôle pour des moteurs audio complexes en temps réel. L'interface fonctionne comme un système de coordonnées acoustiques : l'axe X définit le déroulement temporel ($t$), l'axe Y la fréquence fondamentale ($f_0$). La représentation visuelle sert de partition graphique abstraite (données de contrôle) et non de représentation de l'onde sonore physique réelle.</p>
+      <p>Inspiré par les travaux pionniers de l'électroacoustique (comme l'« Oramics » de Daphne Oram) et conçu comme un instrument performatif, <em>The Pigeon</em> constitue un contraste méthodique à la densité fonctionnelle des DAW conventionnels. Le système réduit le processus compositionnel à une saisie visuelle immédiate. L'absence délibérée de grilles favorise des approches alternatives, non linéaires et expérimentales de la mise en forme sonore.</p>
+    </section>
 
     <div class="help-grid">
+      <section class="help-block">
+        <h3>1. Initialisation & Dessin</h3>
+        <dl class="help-dl">
+          <dt>Assignation</dt> <dd>Sélectionnez une cellule vide dans la Pattern Bank (en bas à droite) pour initier une séquence.</dd>
+          <dt>Saisie</dt>      <dd>L'axe X représente le temps (t), l'axe Y la fréquence (f0). Dessinez des vecteurs sur le canvas.</dd>
+          <dt>Outils</dt>      <dd>Basculez entre Draw (saisie vectorielle) et Erase (effacement).</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>2. Architecture des Pistes</h3>
+        <dl class="help-dl">
+          <dt>Formes d'Onde</dt> <dd>Définit le spectre harmonique : ∿ (Sinus), ⊓ (Carrée), ∧ (Dents de scie).</dd>
+          <dt>Snap</dt>          <dd>Force la synchronisation temporelle absolue sur l'axe X.</dd>
+          <dt>Routage</dt>       <dd>Utilisez Solo/Mute pour le contrôle isolé et les curseurs pour la mise à l'échelle de l'amplitude.</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>3. Interaction Performative</h3>
+        <dl class="help-dl">
+          <dt>Poke Me Pad</dt>    <dd>Interface tactile en temps réel. Déclenche des assignations de fréquences immédiates.</dd>
+          <dt>Matrice d'Effets</dt> <dd>Cliquez sur les indicateurs de couleur pour router le signal vers les modules DSP dédiés.</dd>
+          <dt>Lien X/Y</dt>       <dd>Convertit le pad en macro-contrôleur qui interpole algorithmiquement les paramètres d'effet.</dd>
+        </dl>
+      </section>
+
+      <section class="help-block">
+        <h3>4. Horloge & Macro-Structure</h3>
+        <dl class="help-dl">
+          <dt>Transport</dt>  <dd>Démarrage/Arrêt de la boucle globale (Raccourci: Espace).</dd>
+          <dt>Harmoniser</dt> <dd>Contraint toutes les coordonnées Y aux échelles musicales prédéfinies par arrondi mathématique.</dd>
+          <dt>EXT SYNC</dt>   <dd>Synchronise le séquenceur avec votre DAW (via un port MIDI virtuel).</dd>
+        </dl>
+      </section>
       
-      <div>
-        <h3 class="help-section-title">Architecture & Routage</h3>
-        <dl class="help-dl">
-          <dt>Pattern Bank</dt>
-          <dd>Sélectionnez une cellule vide (A-C) pour initier une séquence.</dd>
-          <dt>Ondes</dt>
-          <dd>Définit le spectre : <strong>∿</strong> (Sinus), <strong>⊓</strong> (Carrée), <strong>∧</strong> (Scie).</dd>
-          <dt>Snap</dt>
-          <dd>Force une quantification temporelle absolue sur l'axe X.</dd>
-          <dt>FX Matrix</dt>
-          <dd>Route les signaux audio vers les modules DSP via les indicateurs de couleur.</dd>
-        </dl>
-      </div>
-
-      <div>
-        <h3 class="help-section-title">Performance & Macro</h3>
-        <dl class="help-dl">
-          <dt>Poke Me Pad</dt>
-          <dd>Interface tactile pour des déclenchements de fréquence immédiats.</dd>
-          <dt>X/Y Link</dt>
-          <dd>Convertit temporairement le pad en macro-contrôleur d'effets.</dd>
-          <dt>Harmonize</dt>
-          <dd>Contraint toutes les coordonnées Y à des échelles musicales.</dd>
-          <dt>Ext Sync</dt>
-          <dd>Synchronise la boucle globale à une DAW externe via MIDI.</dd>
-        </dl>
-      </div>
-
-      <div class="help-brushes">
-        <h3 class="help-section-title">Moteurs de Synthèse (Brushes)</h3>
-        <dl class="help-dl">
-          <dt>Standard</dt>     <dd>Oscillateur continu à phase (idéal pour le portamento).</dd>
-          <dt>Pressure</dt>     <dd>Épaisseur du trait dépendante de la vélocité.</dd>
-          <dt>Particles</dt>    <dd>Micro-montage stochastique (synthèse granulaire).</dd>
-          <dt>Chord</dt>        <dd>Multiplication harmonique selon des intervalles définis.</dd>
-          <dt>Xenakids</dt>     <dd>Modulation de phase générant des clusters de dissonance.</dd>
-          <dt>Rorbach</dt>      <dd>Contrepoint symétrique (effet miroir sur l'axe Y).</dd>
-          <dt>Overtone</dt>     <dd>Synthèse spectrale additive (ajout de partiels logarithmiques).</dd>
-          <dt>DX7 (FM)</dt>     <dd>Modulation de fréquence à 2 opérateurs (méthode Chowning).</dd>
-          <dt>Fractal</dt>      <dd>Synthétiseur déstabilisé via le rack FRACTAL (Chaos/Wavefolding).</dd>
-        </dl>
-      </div>
-
-      <div class="shortcuts-box">
-        <h3 class="help-section-title" style="border: none; margin-bottom: 1rem;">Raccourcis & Workflow</h3>
-        <div class="shortcuts-grid">
-          <div class="shortcut-item"><span class="shortcut-desc">Lecture / Pause</span><span class="shortcut-key">[ ESPACE ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Annuler (Undo)</span><span class="shortcut-key">[ CMD/CTRL + Z ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Copier la sélection</span><span class="shortcut-key">[ CMD/CTRL + C ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Coller la sélection</span><span class="shortcut-key">[ CMD/CTRL + V ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Supprimer la sélection</span><span class="shortcut-key">[ BACKSPACE ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Cloner la sélection</span><span class="shortcut-key">[ ALT + Glisser ]</span></div>
-          <div class="shortcut-item"><span class="shortcut-desc">Sélection multiple</span><span class="shortcut-key">[ SHIFT + Clic ]</span></div>
+      <section class="help-block help-block-full">
+        <h3>5. Outils de Synthèse (Brushes)</h3>
+        <div class="help-brushes-grid">
+          <dl class="help-dl">
+            <dt>Standard</dt>   <dd>Oscillateur continu à phase (portamento parfait).</dd>
+            <dt>Pressure</dt>   <dd>Tracé dépendant de la vélocité simulant la pression physique.</dd>
+            <dt>Calligraphy</dt><dd>Géométrie déterminée par l'angle.</dd>
+            <dt>Particles</dt>  <dd>Micro-montage stochastique (Synthèse Granulaire). Décompose la courbe en grains asynchrones.</dd>
+            <dt>Chord</dt>      <dd>Multiplication harmonique de la fréquence. Génère des oscillateurs parallèles.</dd>
+          </dl>
+          <dl class="help-dl">
+            <dt>Xenakids</dt>   <dd>Modulation de phase non corrélée. Crée des clusters de dissonance flottants.</dd>
+            <dt>Rorbach</dt>    <dd>Contrepoint symétrique.</dd>
+            <dt>Overtone</dt>   <dd>Synthèse Spectrale Additive. Étend la fondamentale avec des partiels logarithmiques.</dd>
+            <dt>DX7 (FM)</dt>   <dd>Modulation de Fréquence (méthode John Chowning).</dd>
+            <dt>Fractal</dt>    <dd>Synthétiseur déstabilisé.<br>
+              <span style="opacity: 0.7; font-size: 0.9em; display: inline-block; margin-top: 4px;">
+                <em>Contrôle DSP via le Rack "FRACTAL" :</em><br>
+                → <strong>CHAOS :</strong> Injecte du bruit de phase (jitter) dans la matrice Y.<br>
+                → <strong>MORPH :</strong> Active une fonction de transfert non linéaire (WaveShaper/Wavefolding).
+              </span>
+            </dd>
+          </dl>
         </div>
-      </div>
+      </section>
 
+      <section class="help-block help-block-full">
+        <h3>6. Sauvegarde & Rendu</h3>
+        <dl class="help-dl" style="grid-template-columns: 150px 1fr;">
+          <dt>SAVE</dt>             <dd>Stocke l'état de toutes les matrices vectorielles sur un pad de la banque.</dd>
+          <dt>Live Arrange</dt>     <dd>Basculement séquentiel entre les mémoires de patterns en temps réel.</dd>
+          <dt>Export WAV</dt>       <dd>Calcul itératif des buffers audio (rendu hors ligne).</dd>
+          <dt>Live REC</dt>         <dd>Enregistre le bus master et exporte des performances improvisées.</dd>
+          <dt>Import/Export</dt>    <dd>Sérialise la session complète (JSON).</dd>
+        </dl>
+      </section>
+
+      <section class="help-block help-block-full help-shortcuts">
+        <h3>Raccourcis & Workflow</h3>
+        <div class="help-shortcuts-grid">
+          <div class="shortcut-row"><kbd>[ESPACE]</kbd> <span>Lecture / Pause</span></div>
+          <div class="shortcut-row"><kbd>[CMD/CTRL + Z]</kbd> <span>Annuler (Undo)</span></div>
+          <div class="shortcut-row"><kbd>[CMD/CTRL + C/V]</kbd> <span>Copier / Coller</span></div>
+          <div class="shortcut-row"><kbd>[ALT + Glisser]</kbd> <span>Cloner la sélection</span></div>
+          <div class="shortcut-row"><kbd>[BACKSPACE]</kbd> <span>Supprimer</span></div>
+          <div class="shortcut-row"><kbd>[SHIFT + Clic]</kbd> <span>Sélection multiple</span></div>
+        </div>
+      </section>
     </div>
-  </div>
-
+  </article>
 </div>
