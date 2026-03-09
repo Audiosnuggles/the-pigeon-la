@@ -287,12 +287,12 @@ button { cursor: pointer; font-family: 'JetBrainsMono[wght]', sans-serif; }
 /* ═══════════════════════════════════════
    CONTROL BAR 
 ═══════════════════════════════════════ */
-.control-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 0; background: var(--color-bg-control); box-shadow: inset 0px 4px 16px 0px rgba(0,0,0,0.25); padding: 14px 16px 18px; }
-.control-bar__left { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+.control-bar { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; background: var(--color-bg-control); box-shadow: inset 0px 4px 16px 0px rgba(0,0,0,0.25); padding: 14px 16px 18px; overflow: hidden; }
+.control-bar__left { display: flex; flex-direction: column; gap: 14px; flex: 1; min-width: 0; }
 .control-bar__label { font-size: 14.5px; font-weight: bold; color: var(--color-dark-gray); margin-right: 10px; }
 .ctrl-top-row { display: flex; align-items: center; justify-content: flex-start; gap: 10px; height: 24px; }
 .ctrl-meta-right { display: flex; align-items: center; gap: 16px; height: 24px; }
-.ctrl-action-blocks { display: flex; align-items: flex-start; gap: 32px; margin-top: -2px; } 
+.ctrl-action-blocks { display: flex; align-items: flex-start; gap: 20px; margin-top: -2px; flex-wrap: wrap; } 
 .ctrl-block { display: flex; flex-direction: column; gap: 6px; width: auto; } 
 .ctrl-btn-row { display: flex; align-items: center; gap: 8px; min-height: 36px; } 
 

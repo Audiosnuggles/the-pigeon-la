@@ -142,36 +142,36 @@ function audioBufferToWav(buffer) {
 
 // KEYBOARD SHORTCUTS (inkl. COPY / PASTE / DELETE)
 window.addEventListener("keydown", (e) => {
-    // Wenn der User in ein Eingabefeld tippt, ignorieren wir die Tasten
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
     
-    // Space = Play/Stop
     if (e.code === "Space") {
         e.preventDefault(); 
         if (isPlaying) document.getElementById("stopButton").click();
         else document.getElementById("playButton").click();
     }
     
-    // CMD/CTRL + Z = Undo
     if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         document.getElementById("undoButton").click();
     }
     
-    // CMD/CTRL + C = Copy
     if ((e.metaKey || e.ctrlKey) && e.key === "c") {
         if (activeTrack && activeTrack.selectedSegments && activeTrack.selectedSegments.length > 0) {
             clipboardSegments = JSON.parse(JSON.stringify(activeTrack.selectedSegments));
         }
     }
     
-    // CMD/CTRL + V = Paste
     if ((e.metaKey || e.ctrlKey) && e.key === "v") {
         if (activeTrack && clipboardSegments.length > 0) {
             saveState();
             const pasted = JSON.parse(JSON.stringify(clipboardSegments));
+            
+            // Snap Logik beim Einfügen anwenden
+            const gridX = 750 / 32;
+            const offsetX = activeTrack.snap ? gridX : 15;
+            
             pasted.forEach(seg => {
-                seg.points.forEach(p => { p.x += 15; p.y += 15; }); // Leicht verschoben einfügen
+                seg.points.forEach(p => { p.x += offsetX; p.y += 15; }); 
                 activeTrack.segments.push(seg);
             });
             activeTrack.selectedSegments = pasted; 
@@ -179,27 +179,17 @@ window.addEventListener("keydown", (e) => {
         }
     }
     
-    // Backspace / Delete = Delete Selected
     if (e.key === "Backspace" || e.key === "Delete") {
         let deletedSomething = false;
-        
-        // Wir schauen in allen Tracks nach, ob etwas ausgewählt ist, und löschen es
         tracks.forEach(t => {
             if (t.selectedSegments && t.selectedSegments.length > 0) {
-                if (!deletedSomething) {
-                    saveState(); // Nur einmal den Undo-State speichern
-                    deletedSomething = true;
-                }
+                if (!deletedSomething) { saveState(); deletedSomething = true; }
                 t.segments = t.segments.filter(s => !t.selectedSegments.includes(s));
-                t.selectedSegments = []; // Auswahl nach dem Löschen leeren
+                t.selectedSegments = []; 
                 redrawTrack(t, undefined, brushSelect.value, chordIntervals, chordColors);
             }
         });
-        
-        // Wenn wirklich etwas gelöscht wurde, blockieren wir die Zurück-Navigation des Browsers
-        if (deletedSomething) {
-            e.preventDefault();
-        }
+        if (deletedSomething) e.preventDefault();
     }
 });
 
@@ -368,7 +358,7 @@ function startLiveSynth(track, x, y) {
     liveGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
     
     const brush = brushSelect.value;
-    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "overtone" ? 0.4 : (brush === "fm" ? 0.2 : 0.3)));
+    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "rorschach" ? 0.2 : (brush === "overtone" ? 0.4 : (brush === "fm" ? 0.2 : 0.3))));
     liveGainNode.gain.linearRampToValueAtTime(maxVol, audioCtx.currentTime + 0.01);
     
     let targetNode = liveGainNode;
@@ -397,9 +387,11 @@ function startLiveSynth(track, x, y) {
     let baseFreq = mapYToFrequency(currentY, 100); 
     if (harmonizeCheckbox.checked) baseFreq = quantizeFrequency(baseFreq, scaleSelect.value);
     
+    // RORSCHACH FIX: Fügt dem Synthesizer 2 Stimmen [0, 1] für Original und Spiegelung hinzu
     const ivs = (brush === "chord") ? (chordIntervals[chordSelect.value] || chordIntervals["major"]) : 
                 (brush === "xenakis" ? [0, 1, 2, 3, 4] : 
-                (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : [0])); 
+                (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : 
+                (brush === "rorschach" ? [0, 1] : [0]))); 
 
     ivs.forEach((iv, i) => {
         const osc = audioCtx.createOscillator(); 
@@ -421,6 +413,11 @@ function startLiveSynth(track, x, y) {
             finalDetune = iv;
         } else if (brush === "overtone") {
             currentFreq = baseFreq * iv; 
+        } else if (brush === "rorschach" && i === 1) {
+            // RORSCHACH FIX: 2. Stimme spielt die gespiegelte Frequenz ab
+            let mirroredY = 100 - currentY;
+            currentFreq = mapYToFrequency(mirroredY, 100);
+            if (harmonizeCheckbox.checked) currentFreq = quantizeFrequency(currentFreq, scaleSelect.value);
         }
 
         const startFreq = currentFreq * Math.pow(2, finalDetune / 12);
@@ -482,6 +479,11 @@ function updateLiveSynth(track, x, y) {
         } else if (brush === "overtone") {
             const harmonic = i + 1; 
             currentFreq = baseFreq * harmonic;
+        } else if (brush === "rorschach" && i === 1) {
+            // RORSCHACH FIX: Auch beim Ziehen der Linie die gespiegelte Frequenz updaten
+            let mirroredY = 100 - currentY;
+            currentFreq = mapYToFrequency(mirroredY, 100);
+            if (harmonizeCheckbox.checked) currentFreq = quantizeFrequency(currentFreq, scaleSelect.value);
         }
         
         const targetF = currentFreq * Math.pow(2, finalDetune / 12);
@@ -584,9 +586,11 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     if (targetCtx === audioCtx) activeNodes.push(osc);
                 });
             } else {
+                // RORSCHACH FIX: Auch beim Playback des Loops 2 Stimmen triggern
                 const ivs = (brush === "chord") ? (chordIntervals[seg.chordType || "major"] || chordIntervals["major"]) : 
                             (brush === "xenakis" ? [0, 1, 2, 3, 4] : 
-                            (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : [0]));
+                            (brush === "overtone" ? [1, 2, 3, 4, 5, 6] : 
+                            (brush === "rorschach" ? [0, 1] : [0])));
                 
                 ivs.forEach((iv, i) => {
                     const osc = targetCtx.createOscillator(); 
@@ -641,7 +645,7 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                     const sT = tfPairs[0].t;
                     const eT = tfPairs[tfPairs.length - 1].t;
 
-                    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "overtone" ? 0.4 : (brush === "fm" ? 0.2 : 0.3)));
+                    const maxVol = (brush === "xenakis") ? 0.15 : (brush === "fractal" ? 0.2 : (brush === "rorschach" ? 0.2 : (brush === "overtone" ? 0.4 : (brush === "fm" ? 0.2 : 0.3))));
                     g.gain.setValueAtTime(0, sT); 
                     g.gain.linearRampToValueAtTime(maxVol, sT + 0.02); 
                     g.gain.setValueAtTime(maxVol, eT); 
@@ -659,6 +663,11 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
                             finalDetune = iv;
                         } else if (brush === "overtone") {
                             playFreq = pair.f * iv;
+                        } else if (brush === "rorschach" && i === 1) {
+                            // RORSCHACH FIX: Spiegel-Frequenz auch beim Abspielen der Schleife berechnen
+                            let mirroredY = 100 - pair.origY;
+                            playFreq = mapYToFrequency(mirroredY, 100);
+                            if (harmonizeCheckbox.checked) playFreq = quantizeFrequency(playFreq, scaleSelect.value);
                         }
 
                         const targetF = playFreq * Math.pow(2, finalDetune / 12);
@@ -702,7 +711,7 @@ function scheduleTracks(start, targetCtx = audioCtx, targetDest = masterGain, of
     });
 }
 
-// SETUP DRAWING (inkl. MARQUEE SELECTION, SHIFT-TOGGLE & ALT-CLONE)
+// SETUP DRAWING (inkl. MARQUEE SELECTION, SHIFT-TOGGLE, ALT-CLONE & GRID-SNAP)
 function setupDrawing(track) {
     let drawing = false;
     let moving = false;
@@ -722,7 +731,8 @@ function setupDrawing(track) {
         hasClonedThisDrag = false;
         
         const pos = getPos(e, track.canvas); 
-        const x = track.snap ? Math.round(pos.x / (750 / 32)) * (750 / 32) : pos.x;
+        const gridX = 750 / 32;
+        const x = track.snap ? Math.round(pos.x / gridX) * gridX : pos.x; 
         
         if (toolSelect.value === "draw") {
             drawing = true; 
@@ -741,7 +751,6 @@ function setupDrawing(track) {
         } else if (toolSelect.value === "erase") {
             erase(track, pos.x, pos.y); 
         } else if (toolSelect.value === "select") {
-            
             let clickedSeg = null;
             for (let i = track.segments.length - 1; i >= 0; i--) {
                 if (track.segments[i].points.some(p => Math.hypot(p.x - pos.x, p.y - pos.y) < 15)) {
@@ -766,14 +775,14 @@ function setupDrawing(track) {
                     }
                     moving = true;
                 }
-                lastMousePos = { x: pos.x, y: pos.y };
+                lastMousePos = { x: x, y: pos.y };
                 redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
             } else {
                 makingSelection = true;
                 shiftPressedDuringSelection = e.shiftKey;
                 if (!e.shiftKey) track.selectedSegments = [];
-                selStart = { x: pos.x, y: pos.y };
-                track.selectionBox = { x: pos.x, y: pos.y, w: 0, h: 0 };
+                selStart = { x: x, y: pos.y };
+                track.selectionBox = { x: x, y: pos.y, w: 0, h: 0 };
                 redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
             }
         }
@@ -782,7 +791,8 @@ function setupDrawing(track) {
     const move = e => {
         if (!drawing && toolSelect.value !== "erase" && !moving && !makingSelection) return; 
         const pos = getPos(e, track.canvas); 
-        const x = track.snap ? Math.round(pos.x / (750 / 32)) * (750 / 32) : pos.x;
+        const gridX = 750 / 32;
+        const x = track.snap ? Math.round(pos.x / gridX) * gridX : pos.x; 
         
         if (drawing && track.curSeg) {
             const lastPt = track.curSeg.points[track.curSeg.points.length - 1];
@@ -808,27 +818,29 @@ function setupDrawing(track) {
             erase(track, pos.x, pos.y); 
         } else if (toolSelect.value === "select") {
             if (makingSelection) {
-                track.selectionBox.w = pos.x - selStart.x;
+                track.selectionBox.w = x - selStart.x;
                 track.selectionBox.h = pos.y - selStart.y;
                 redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
             } else if (moving && (e.buttons === 1 || e.type === "touchmove")) {
                 
-                // ALT-DRAG TO COPY
-                if (e.altKey && !hasClonedThisDrag) {
-                    const clones = JSON.parse(JSON.stringify(track.selectedSegments));
-                    track.segments.push(...clones);
-                    track.selectedSegments = clones; 
-                    hasClonedThisDrag = true;
-                }
-
-                const dx = pos.x - lastMousePos.x;
+                const dx = x - lastMousePos.x;
                 const dy = pos.y - lastMousePos.y;
-                track.selectedSegments.forEach(seg => {
-                    seg.points.forEach(p => { p.x += dx; p.y += dy; });
-                });
                 
-                lastMousePos = { x: pos.x, y: pos.y };
-                redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
+                if (dx !== 0 || dy !== 0) {
+                    if (e.altKey && !hasClonedThisDrag) {
+                        const clones = JSON.parse(JSON.stringify(track.selectedSegments));
+                        track.segments.push(...clones);
+                        track.selectedSegments = clones; 
+                        hasClonedThisDrag = true;
+                    }
+
+                    track.selectedSegments.forEach(seg => {
+                        seg.points.forEach(p => { p.x += dx; p.y += dy; });
+                    });
+                    
+                    lastMousePos = { x: x, y: pos.y };
+                    redrawTrack(track, undefined, brushSelect.value, chordIntervals, chordColors);
+                }
             }
         }
     };
